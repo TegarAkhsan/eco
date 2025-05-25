@@ -1,0 +1,372 @@
+/* about-ecotrack.css */
+
+/* Atur section utama untuk About EcoTrack */
+.about-ecotrack-section {
+    /* Posisi section relatif terhadap parent */
+    position: relative;
+    /* Ukuran lebar dan tinggi tetap 1440px x 1385px untuk desktop */
+    width: 100%;
+    height: 1385px;
+    /* Tengah secara horizontal */
+    margin: 0 auto;
+    /* Sembunyikan konten yang keluar dari batas */
+    overflow: hidden;
+}
+
+/* Background setengah halaman bergambar bumi */
+.about-ecotrack-section .earth-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background-image: url('/path-to-your-image/earth.png');
+    background-size: cover;
+    background-position: center left;
+    background-repeat: no-repeat;
+    object-fit: cover;
+}
+
+/* Container utama untuk semua konten teks dan kartu */
+.about-ecotrack-section .content-container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    /* Untuk memastikan kartu berada di tengah */
+    gap: 2rem;
+    /* Atur jarak dari atas */
+}
+
+/* Container untuk judul dan deskripsi section */
+.about-ecotrack-section .section-title-container {
+    position: relative;
+    /* atau bisa static */
+    width: 100%;
+    text-align: center;
+    margin-top: 129px;
+    /* ngatur jarak dari atas */
+}
+
+/* Style teks untuk judul utama */
+.about-ecotrack-section .section-title {
+    position: static;
+    font-size: 36px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 1rem;
+    /* Jarak bawah */
+    text-align: center;
+    /* Tengah secara horizontal */
+    line-height: 1.2;
+    /* Jarak antar baris */
+}
+
+/* Style teks untuk deskripsi singkat di bawah judul */
+.about-ecotrack-section .section-description {
+    position: static;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    color: #9CA3AF;
+    max-width: 743px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* Style umum untuk kartu (card) */
+.about-ecotrack-section .card {
+    position: absolute;
+    background-color: rgba(203, 213, 225, 0.1);
+    /* Transparan */
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    /* Border semi-transparan putih */
+    border-radius: 15px 40px 40px 15px;
+    /* Sudut bulat */
+    backdrop-filter: blur(17.5px);
+    /* Efek blur latar belakang */
+    -webkit-backdrop-filter: blur(17.5px);
+    transition: background-color 0.3s ease;
+    /* Animasi hover */
+}
+
+/* Rotating Gallery with Focus Effect */
+.rotating-gallery {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.gallery-item {
+    position: absolute;
+    width: 450px;
+    height: 380px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    transition: all 1s ease-in-out;
+    z-index: 1;
+}
+
+.gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+/* Initial positions */
+.left-item {
+    transform: translateX(-500px) scale(0.8);
+    opacity: 1;
+    z-index: 1;
+}
+
+.center-item {
+    transform: translateX(0) scale(1.1);
+    opacity: 1;
+    z-index: 10;
+}
+
+.right-item {
+    transform: translateX(500px) scale(0.8);
+    opacity: 1;
+    z-index: 1;
+}
+
+/* Animation */
+@keyframes galleryRotation {
+
+    0%,
+    100% {
+        transform: translateX(-400px) scale(0.8);
+        opacity: 1;
+        z-index: 1;
+    }
+
+    33% {
+        transform: translateX(0) scale(1.1);
+        opacity: 1;
+        z-index: 10;
+    }
+
+    66% {
+        transform: translateX(400px) scale(0.8);
+        opacity: 1;
+        z-index: 1;
+    }
+}
+
+/* Apply animation to each item with different delays */
+.left-item {
+    animation: galleryRotation 15s infinite;
+}
+
+.center-item {
+    animation: galleryRotation 15s infinite;
+    animation-delay: -5s;
+}
+
+.right-item {
+    animation: galleryRotation 15s infinite;
+    animation-delay: -10s;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .rotating-gallery {
+        height: 500px;
+    }
+
+    .gallery-item {
+        width: 250px;
+        height: 130px;
+    }
+
+    .left-item {
+        transform: translateX(-300px) scale(0.8);
+    }
+
+    .right-item {
+        transform: translateX(300px) scale(0.8);
+    }
+
+    @keyframes galleryRotation {
+
+        0%,
+        100% {
+            transform: translateX(-200px) scale(0.8);
+        }
+
+        33% {
+            transform: translateX(0) scale(1.1);
+        }
+
+        66% {
+            transform: translateX(200px) scale(0.8);
+        }
+    }
+}
+
+/* Efek hover pada kartu: background sedikit lebih terang */
+.about-ecotrack-section .card:hover {
+    background-color: rgba(203, 213, 225, 0.15);
+}
+
+/* Kartu untuk "Misi Kami" */
+.about-ecotrack-section .card.misi-kami {
+    width: 344.78px;
+    height: 380px;
+    left: calc(55% - 172.39px);
+    /* Posisi horizontal dengan jarak dinamis */
+    top: 350px;
+}
+
+/* Kartu untuk "SDGs" */
+.about-ecotrack-section .card.sdgs {
+    width: 346.64px;
+    height: 443.80px;
+    left: calc(80% - 173.32px);
+    /* Posisi horizontal dengan jarak dinamis */
+    top: 490px;
+}
+
+/* Kartu untuk "Sumber Data" */
+.about-ecotrack-section .card.sumber-data {
+    width: 345px;
+    height: 290px;
+    left: calc(55% - 172.5px);
+    /* Posisi horizontal dengan jarak dinamis */
+    top: 780px;
+}
+
+/* Container isi dalam kartu (text dalam card) */
+.about-ecotrack-section .card-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    width: 100%;
+}
+
+/* Isi "Misi Kami" */
+.about-ecotrack-section .card.misi-kami .card-content {
+    width: 243.23px;
+    left: 51.59px;
+    top: 51px;
+}
+
+/* Isi "SDGs" */
+.about-ecotrack-section .card.sdgs .card-content {
+    width: 244.54px;
+    left: 51.87px;
+    top: 43.66px;
+}
+
+/* Isi "Sumber Data" */
+.about-ecotrack-section .card.sumber-data .card-content {
+    width: 243.23px;
+    left: 51.59px;
+    top: 50px;
+}
+
+/* Style untuk subjudul dalam kartu */
+.about-ecotrack-section .subsection-title {
+    color: #FFFFFF;
+    font-size: 32px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+}
+
+/* Style untuk deskripsi dalam kartu */
+.about-ecotrack-section .subsection-description {
+    color: #FFFFFF;
+    font-size: 20px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+}
+
+/* Memberi jarak antar line break di deskripsi */
+.about-ecotrack-section .subsection-description br {
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+/* Elemen dekorasi berbentuk elips (blur effect) */
+.about-ecotrack-section .decorative-ellipse {
+    position: absolute;
+    width: 322px;
+    height: 322px;
+    left: 1219px;
+    top: 1191px;
+    background: linear-gradient(to bottom, rgba(63, 168, 223, 0.5), rgba(163, 12, 116, 0.5));
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: 0;
+}
+
+/* Responsive Design: Atur ulang layout di layar lebih kecil dari 1440px */
+@media (max-width: 1440px) {
+    .about-ecotrack-section .earth-background {
+        width: 100%;
+        height: 300px;
+    }
+
+    .about-ecotrack-section .content-container {
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 320px;
+    }
+
+    .about-ecotrack-section .section-title {
+        font-size: 32px;
+    }
+
+    .about-ecotrack-section .section-description {
+        font-size: 14px;
+        max-width: 600px;
+    }
+
+    /* Kartu lebih responsif */
+    .about-ecotrack-section .card {
+        width: 90%;
+        max-width: 350px;
+        height: auto;
+        padding: 2rem 1.5rem;
+    }
+
+    .about-ecotrack-section .decorative-ellipse {
+        display: none;
+    }
+
+    /* Pengaturan spesifik untuk layar lebih kecil dari 768px */
+    @media (max-width: 768px) {
+        .about-ecotrack-section .earth-background {
+            height: 200px;
+        }
+
+        .about-ecotrack-section .section-title {
+            font-size: 28px;
+        }
+
+        .about-ecotrack-section .section-description {
+            font-size: 12px;
+            max-width: 90%;
+        }
+
+        .about-ecotrack-section .card {
+            width: 90%;
+            margin: 0.5rem auto;
+        }
+
+        .about-ecotrack-section .card-content {
+            gap: 0.5rem;
+        }
+    }
+}
