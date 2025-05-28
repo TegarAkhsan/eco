@@ -18,6 +18,13 @@ class Report extends Model
         'urgency',
         'description',
         'photos',
+        'province'
+    ];
+
+    protected $casts = [
+        'photos' => 'array',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function user()

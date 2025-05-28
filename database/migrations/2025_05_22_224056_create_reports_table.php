@@ -10,17 +10,17 @@ class CreateReportsTable extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->string('email');
             $table->string('location');
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
-            $table->enum('type', ['organik', 'anorganik', 'b3', 'campuran']);
-            $table->enum('size', ['kecil', 'sedang', 'besar']);
-            $table->enum('urgency', ['rendah', 'sedang', 'tinggi', 'kritis']);
+            $table->float('latitude');
+            $table->float('longitude');
+            $table->string('type');
+            $table->string('size');
+            $table->string('urgency');
             $table->text('description')->nullable();
-            $table->text('photos')->nullable();
+            $table->longtext('photos')->nullable(); // Ganti json dengan longtext
+            $table->string('province')->nullable();
             $table->timestamps();
         });
     }

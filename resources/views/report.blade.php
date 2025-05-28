@@ -4,15 +4,18 @@
     <div class="min-h-screen bg-cover bg-center px-4 py-12 font-['Poppins']"
         style="background-image: url('{{ asset('images/earth.png') }}')">
         <div class="bg-[#0b1121]/90 rounded-xl max-w-6xl mx-auto p-10 shadow-xl">
-            <!-- Success/Error Messages -->
             @if (session('success'))
-                <div class="text-center text-green-500 text-sm mb-4">
-                    {{ session('success') }}
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+                    role="alert">
+                    <strong class="font-bold">Sukses!</strong>
+                    <span class="block sm:inline">{{ session('success') }}</span>
                 </div>
             @endif
             @if ($errors->any())
-                <div class="text-center text-red-500 text-sm mb-4">
-                    <ul>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <strong class="font-bold">Oops!</strong>
+                    <span class="block sm:inline">Ada beberapa masalah dengan input Anda:</span>
+                    <ul class="mt-2 list-disc list-inside">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -25,7 +28,6 @@
                 environmental protection</p>
 
             <div class="grid md:grid-cols-2 gap-8">
-                <!-- Contact Info -->
                 <div class="bg-blue-700/90 text-white p-6 rounded-lg space-y-6">
                     <h2 class="text-xl font-semibold">Contact Information</h2>
                     <p class="text-sm text-gray-200">Empowering communities with innovative tools for waste management and
@@ -55,7 +57,6 @@
                     </div>
                 </div>
 
-                <!-- Report Form -->
                 <form action="{{ route('report.submit') }}" method="POST" enctype="multipart/form-data"
                     class="space-y-5 text-white relative" id="reportForm">
                     @csrf
@@ -99,7 +100,6 @@
                         @enderror
                     </div>
 
-                    <!-- Hidden fields for coordinates -->
                     <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
                     <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
 
@@ -213,41 +213,63 @@
 
     <script>
         // Prompt for geolocation when the page loads or when a photo is selected
-        document.getElementById('photos').addEventListener('change', requestGeolocation);
-        window.addEventListener('load', requestGeolocation);
+        // document.getElementById('photos').addEventListener('change', requestGeolocation); // Komentar ini karena sudah ada tombol
+        window.addEventListener('load', requestGeolocation); // Minta lokasi saat halaman dimuat
 
         // Handle "Gunakan Lokasi Saat Ini" button click
         document.getElementById('getLocation').addEventListener('click', requestGeolocation);
 
-        function requestGeolocation() {
+        async function requestGeolocation() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async function(position) {
-                            const latitude = position.coords.latitude;
-                            const longitude = position.coords.longitude;
-                            document.getElementById('latitude').value = latitude;
-                            document.getElementById('longitude').value = longitude;
+                try {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 5000,
+                            maximumAge: 0
+                        });
+                    });
 
-                            // Reverse geocode to get a human-readable address
-                            try {
-                                const response = await fetch(
-                                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-                                    );
-                                const data = await response.json();
-                                const address = data.display_name || `Lat: ${latitude}, Lon: ${longitude}`;
-                                document.getElementById('location').value = address;
-                                alert('Lokasi berhasil didapatkan: ' + address);
-                            } catch (error) {
-                                document.getElementById('location').value = `Lat: ${latitude}, Lon: ${longitude}`;
-                                alert(
-                                    'Lokasi berhasil didapatkan, tetapi alamat tidak dapat diambil. Menggunakan koordinat.');
-                            }
-                        },
-                        function(error) {
-                            alert('Gagal mendapatkan lokasi: ' + error.message +
-                                '. Silakan masukkan alamat secara manual.');
-                        }
-                );
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    document.getElementById('latitude').value = latitude;
+                    document.getElementById('longitude').value = longitude;
+
+                    // Reverse geocode to get a human-readable address using OpenStreetMap Nominatim
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+                        );
+                        const data = await response.json();
+                        const address = data.display_name || `Lat: ${latitude}, Lon: ${longitude}`;
+                        document.getElementById('location').value = address;
+                        alert('Lokasi berhasil didapatkan: ' + address);
+                    } catch (error) {
+                        console.error('Error reverse geocoding:', error);
+                        document.getElementById('location').value = `Lat: ${latitude}, Lon: ${longitude}`;
+                        alert(
+                            'Lokasi berhasil didapatkan, tetapi alamat tidak dapat diambil dari Nominatim. Menggunakan koordinat.'
+                        );
+                    }
+                } catch (error) {
+                    let errorMessage = 'Gagal mendapatkan lokasi. ';
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += "Anda menolak permintaan Geolocation.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += "Informasi lokasi tidak tersedia.";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += "Permintaan untuk mendapatkan lokasi melebihi batas waktu.";
+                            break;
+                        case error.UNKNOWN_ERROR:
+                            errorMessage += "Terjadi kesalahan tidak diketahui.";
+                            break;
+                    }
+                    alert(errorMessage + ' Silakan masukkan alamat secara manual.');
+                    console.error('Geolocation error:', error);
+                }
             } else {
                 alert('Geolocation tidak didukung oleh browser Anda. Silakan masukkan alamat secara manual.');
             }
@@ -257,7 +279,7 @@
         document.getElementById('reportForm').addEventListener('submit', function(event) {
             const submitButton = document.getElementById('submitButton');
             submitButton.disabled = true;
-            submitButton.textContent = 'Mengirim...';
+            submitButton.textContent = 'Mengirim Laporan...';
         });
     </script>
 @endsection

@@ -2,12 +2,10 @@
 
 @section('content')
     <div class="container mx-auto px-4 py-12 font-['Poppins']">
-        <!-- Header -->
         <h1 class="text-4xl font-extrabold text-white mb-8 tracking-tight text-center">
             Peta Interaktif Sampah
         </h1>
 
-        <!-- Search and Filter Section -->
         <div class="bg-[#0b1121]/70 backdrop-blur-md p-6 rounded-2xl mb-8 shadow-[0px_6px_20px_rgba(0,0,0,0.4)]">
             <div class="grid md:grid-cols-3 gap-6 mb-6">
                 <div>
@@ -44,18 +42,14 @@
             </button>
         </div>
 
-        <!-- Map Container -->
         <div class="bg-[#d9d9d9]/10 rounded-xl overflow-hidden h-[700px] shadow-[0px_6px_20px_rgba(0,0,0,0.3)] relative">
             <div id="map" class="w-full h-full"></div>
-            <!-- Custom Reset Button -->
             <button id="resetMapButton" class="custom-reset-button">
                 Reset Peta
             </button>
         </div>
 
-        <!-- Information Section -->
         <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Nearest Locations -->
             <div class="bg-[#0b1121]/80 backdrop-blur-lg p-6 rounded-2xl shadow-xl">
                 <h3 class="text-2xl font-semibold text-white mb-5 flex items-center gap-2">
                     <svg class="w-6 h-6 text-[#22d3ee]" fill="none" stroke="currentColor" stroke-width="2"
@@ -65,11 +59,9 @@
                     Lokasi Terdekat
                 </h3>
                 <ul id="nearest-locations" class="space-y-5 text-gray-300 text-sm">
-                    <!-- Diisi dinamis oleh JavaScript -->
                 </ul>
             </div>
 
-            <!-- Area Statistics -->
             <div class="bg-[#0b1121]/80 backdrop-blur-lg p-6 rounded-2xl shadow-xl">
                 <h3 class="text-2xl font-semibold text-white mb-5 flex items-center gap-2">
                     <svg class="w-6 h-6 text-[#22d3ee]" fill="none" stroke="currentColor" stroke-width="2"
@@ -78,30 +70,10 @@
                     </svg>
                     Statistik Area
                 </h3>
-                <div class="space-y-5">
-                    @php
-                        $reportCounts = [
-                            ['Organik', App\Models\Report::where('type', 'organik')->count(), 'lokasi'],
-                            ['Anorganik', App\Models\Report::where('type', 'anorganik')->count(), 'lokasi'],
-                            ['B3', App\Models\Report::where('type', 'b3')->count(), 'lokasi'],
-                            ['Campuran', App\Models\Report::where('type', 'campuran')->count(), 'lokasi'],
-                        ];
-                        $totalReports = App\Models\Report::count();
-                    @endphp
-                    @foreach ($reportCounts as [$label, $count, $unit])
-                        <div>
-                            <p class="text-sm text-gray-300 mb-2">{{ $label }}</p>
-                            <div class="w-full bg-gray-800 rounded-full h-3">
-                                <div class="bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] h-3 rounded-full transition-all duration-500"
-                                    style="width: {{ $totalReports > 0 ? ($count / $totalReports) * 100 : 0 }}%"></div>
-                            </div>
-                            <p class="text-right text-xs text-gray-400 mt-1">{{ $count }} {{ $unit }}</p>
-                        </div>
-                    @endforeach
+                <div id="area-statistics" class="space-y-5">
                 </div>
             </div>
 
-            <!-- Report New Location -->
             <div class="bg-[#0b1121]/80 backdrop-blur-lg p-6 rounded-2xl shadow-xl flex flex-col justify-between">
                 <div>
                     <h3 class="text-2xl font-semibold text-white mb-5 flex items-center gap-2">
@@ -111,7 +83,8 @@
                         </svg>
                         Laporkan Titik Baru
                     </h3>
-                    <p class="text-sm text-gray-300 mb-6 leading-relaxed">Temukan titik sampah liar yang belum terpetakan?
+                    <p class="text-sm text-gray-300 mb-6 leading-relaxed">Temukan titik sampah liar yang belum
+                        terpetakan?
                         Laporkan sekarang untuk membantu lingkungan kita menjadi lebih bersih.</p>
                 </div>
                 <a href="{{ route('report') }}"
@@ -122,311 +95,880 @@
         </div>
     </div>
 
-    <!-- OpenLayers CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/ol@v9.2.0/dist/ol.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
     <style>
-        /* Custom Map Styles */
-        .ol-control {
-            background: linear-gradient(135deg, #4da8da, #1e90ff) !important;
-            border-radius: 50px !important;
-            padding: 5px !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-            backdrop-filter: blur(5px) !important;
+        /* Existing styles remain unchanged */
+        .leaflet-container {
+            background: #f5f6f5 !important;
+            border-radius: 12px;
         }
 
-        .ol-control button {
-            background: rgba(255, 255, 255, 0.2) !important;
-            color: #ffffff !important;
-            border: none !important;
-            border-radius: 50% !important;
-            width: 30px !important;
-            height: 30px !important;
+        .leaflet-control-container .leaflet-control {
+            background: #ffffff !important;
+            border-radius: 8px !important;
+            padding: 4px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .leaflet-control-zoom a {
+            background: #ffffff !important;
+            color: #333333 !important;
+            border-radius: 6px !important;
+            width: 28px !important;
+            height: 28px !important;
+            line-height: 28px !important;
             font-size: 16px !important;
-            transition: all 0.3s ease !important;
+            transition: all 0.2s ease !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             margin: 2px !important;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+            border: 1px solid #d1d5db !important;
         }
 
-        .ol-control button:hover {
-            background: linear-gradient(135deg, #22d3ee, #06b6d4) !important;
-            transform: scale(1.1) !important;
-            color: #ffffff !important;
+        .leaflet-control-zoom a:hover {
+            background: #e5e7eb !important;
+            color: #1e40af !important;
         }
 
-        .ol-zoom {
+        .leaflet-control-zoom {
+            display: flex !important;
+            flex-direction: column !important;
             gap: 4px !important;
-            position: absolute !important;
-            bottom: 20px !important;
-            left: 20px !important;
+            top: 10px !important;
+            left: 10px !important;
         }
 
-        .ol-attribution {
-            background: linear-gradient(135deg, #4da8da, #1e90ff) !important;
-            color: #ffffff !important;
-            border-radius: 12px !important;
-            font-size: 12px !important;
-            padding: 4px 8px !important;
-            backdrop-filter: blur(5px) !important;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
-            position: absolute !important;
-            bottom: 20px !important;
-            left: 90px !important;
+        .leaflet-control-attribution {
+            background: #ffffff !important;
+            color: #4b5563 !important;
+            border-radius: 6px !important;
+            font-size: 11px !important;
+            padding: 2px 6px !important;
+            bottom: 10px !important;
+            right: 10px !important;
+            opacity: 0.8;
         }
 
-        .popup-content {
-            background: linear-gradient(135deg, #ffffff, #e0f7fa);
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            max-width: 300px;
-            font-family: 'Poppins', sans-serif;
+        .leaflet-popup-content-wrapper {
+            background: #ffffff !important;
+            border-radius: 8px !important;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2) !important;
+            padding: 0 !important;
+        }
+
+        .leaflet-popup-content {
+            margin: 12px !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 13px !important;
+            max-width: 280px !important;
+            line-height: 1.5 !important;
+        }
+
+        .leaflet-popup-tip {
+            background: #ffffff !important;
         }
 
         .custom-reset-button {
             position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #4da8da, #1e90ff);
-            color: #ffffff;
+            bottom: 15px;
+            right: 15px;
+            background: #ffffff !important;
+            color: #1e40af !important;
             padding: 8px 16px;
-            border-radius: 20px;
-            border: none;
-            font-size: 14px;
-            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
         }
 
         .custom-reset-button:hover {
-            background: linear-gradient(135deg, #22d3ee, #06b6d4);
-            transform: translateX(-50%) scale(1.05);
+            background: #e5e7eb !important;
+            color: #1e3a8a !important;
+            transform: scale(1.03);
+        }
+
+        .marker-cluster-small {
+            background: #f59e0b !important;
+            border-radius: 50% !important;
+            opacity: 0.9;
+        }
+
+        .marker-cluster-medium {
+            background: #f59e0b !important;
+            border-radius: 50% !important;
+            opacity: 0.9;
+        }
+
+        .marker-cluster-large {
+            background: #f59e0b !important;
+            border-radius: 50% !important;
+            opacity: 0.9;
+        }
+
+        .marker-cluster div {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            font-weight: 600 !important;
+            border-radius: 50% !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            font-size: 12px;
+        }
+
+        /* Circle styles */
+        .waste-circle {
+            border-radius: 50%;
+            opacity: 0.7;
+            text-align: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Custom styles for waste circles with numbers */
+        .waste-circle-label {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        /* Choropleth styles */
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px 'Poppins', Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .info h4 {
+            margin: 0 0 5px;
+            color: #777;
+            font-weight: 600;
+        }
+
+        .legend {
+            line-height: 18px;
+            color: #555;
+        }
+
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+
+        /* Tooltip style */
+        .leaflet-tooltip {
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
     </style>
+
     <script>
-        // Fetch user-submitted waste points from the database
-        @php
-            $reports = App\Models\Report::all();
-            $wastePoints = $reports
-                ->map(function ($report) {
-                    return [
-                        'name' => $report->name,
-                        'coords' => [$report->longitude, $report->latitude],
-                        'type' => $report->type,
-                        'address' => $report->location,
-                        'capacity' => $report->size,
-                        'vol_masuk' => 'N/A',
-                        'vol_dikelola' => 'N/A',
-                        'volume_sampah_diolah' => 'N/A',
-                        'vol_diangkut' => 'N/A',
-                        'urgency' => $report->urgency,
-                        'description' => $report->description,
-                        'photos' => $report->photos ? json_decode($report->photos) : [],
-                    ];
-                })
-                ->toArray();
-        @endphp
+        // Fetch user-submitted waste points from the database dynamically
+        async function fetchWastePoints() {
+            try {
+                const response = await fetch('/api/reports');
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(
+                        `Gagal mengambil data laporan: ${response.status} ${response.statusText} - ${errorText}`);
+                }
+                const data = await response.json();
+                console.log('API Response Data:', data);
 
-        // Map initialization with OpenStreetMap
-        const map = new ol.Map({
-            target: 'map',
-            layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.OSM()
-                })
-            ],
-            view: new ol.View({
-                center: ol.proj.fromLonLat([113.9213, -0.7893]), // Pusat Indonesia
-                zoom: 5,
-                minZoom: 3,
+                return {
+                    reports: data.reports.map(report => ({
+                        id: report.id || null,
+                        name: report.name || 'Unknown',
+                        coords: report.coords && report.coords.length === 2 ? [parseFloat(report.coords[0]),
+                            parseFloat(report.coords[1])
+                        ] : [0, 0],
+                        type: report.type || 'Unknown',
+                        address: report.location || 'Unknown',
+                        capacity: report.size || 'Unknown',
+                        urgency: report.urgency || 'Unknown',
+                        description: report.description || 'No description',
+                        photos: report.photos || [],
+                        province: report.province || 'UnknownProvince',
+                        city: report.city || 'UnknownCity'
+                    })),
+                    provinceReports: data.provinceReports,
+                    cityReports: data.cityReports
+                };
+            } catch (error) {
+                console.error('Error fetching waste points:', error);
+                alert('Gagal memuat data laporan: ' + error.message);
+                return {
+                    reports: [],
+                    provinceReports: {},
+                    cityReports: {}
+                };
+            }
+        }
+
+        // Map initialization with Leaflet
+        const map = L.map('map', {
+            center: [-2.5489, 118.0149],
+            zoom: 5,
+            minZoom: 3,
+            maxZoom: 18,
+            zoomControl: false
+        });
+
+        // Add custom zoom control
+        L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+
+        // Tile layers
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            tileSize: 256,
+            maxZoom: 18
+        });
+
+        const satelliteLayer = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
                 maxZoom: 18
-            })
-        });
+            });
 
-        // Vector source for markers
-        const vectorSource = new ol.source.Vector({});
-        const vectorLayer = new ol.layer.Vector({
-            source: vectorSource
-        });
-        map.addLayer(vectorLayer);
+        // Set default layer and add to map
+        let defaultLayer = localStorage.getItem('mapLayer') === 'satellite' ? satelliteLayer : osmLayer;
+        defaultLayer.addTo(map);
 
-        // Popup overlay
-        const popup = new ol.Overlay({
-            element: document.createElement('div'),
-            autoPan: true,
-            autoPanAnimation: {
-                duration: 250
+        // Initialize marker cluster group with optimized settings
+        const markers = L.markerClusterGroup({
+            maxClusterRadius: 60,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: true,
+            zoomToBoundsOnClick: true,
+            disableClusteringAtZoom: 14,
+            iconCreateFunction: function(cluster) {
+                const count = cluster.getChildCount();
+                let sizeClass = 'small';
+                if (count >= 10 && count < 100) sizeClass = 'medium';
+                else if (count >= 100) sizeClass = 'large';
+                return L.divIcon({
+                    html: `<div><span>${count}</span></div>`,
+                    className: `marker-cluster marker-cluster-${sizeClass}`,
+                    iconSize: L.point(40, 40)
+                });
             }
         });
-        map.addOverlay(popup);
-        popup.getElement().className = 'popup-content';
+        map.addLayer(markers);
 
-        // Custom marker styles based on type
-        function getMarkerStyle(type) {
-            let src, color;
-            switch (type) {
-                case 'organik':
-                    src = 'https://img.icons8.com/color/48/organic-food.png';
-                    color = '#22d3ee';
-                    break;
-                case 'anorganik':
-                    src = 'https://img.icons8.com/color/48/recycle.png';
-                    color = '#f97316';
-                    break;
-                case 'b3':
-                    src = 'https://img.icons8.com/color/48/hazard.png';
-                    color = '#ef4444';
-                    break;
-                case 'campuran':
-                    src = 'https://img.icons8.com/color/48/waste.png';
-                    color = '#d97706';
-                    break;
-                default:
-                    src = 'https://img.icons8.com/color/48/marker.png';
-                    color = '#22d3ee';
+        // Custom marker icon using the provided URL
+        function getMarkerIcon() {
+            return L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [0, -41],
+                shadowSize: [41, 41],
+                shadowAnchor: [12, 41]
+            });
+        }
+
+        // Update area statistics dynamically
+        function updateAreaStatistics(wastePoints) {
+            const types = ['organik', 'anorganik', 'b3', 'campuran'];
+            const reportCounts = types.map(type => ({
+                label: type.charAt(0).toUpperCase() + type.slice(1),
+                count: wastePoints.filter(point => point.type === type).length,
+                unit: 'lokasi'
+            }));
+            const totalReports = wastePoints.length;
+
+            const statsContainer = document.getElementById('area-statistics');
+            statsContainer.innerHTML = '';
+
+            if (totalReports === 0) {
+                statsContainer.innerHTML = `<p class="text-gray-400 text-center py-4">Tidak ada statistik.</p>`;
+                return;
             }
-            return new ol.style.Style({
-                image: new ol.style.Icon({
-                    anchor: [0.5, 1],
-                    src: src,
-                    scale: 0.5,
-                    color: color
-                })
+
+            reportCounts.forEach(({
+                label,
+                count,
+                unit
+            }) => {
+                const statDiv = document.createElement('div');
+                statDiv.innerHTML = `
+                    <p class="text-sm text-gray-300 mb-2">${label}</p>
+                    <div class="w-full bg-gray-800 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] h-3 rounded-full transition-all duration-500"
+                            style="width: ${totalReports > 0 ? (count / totalReports) * 100 : 0}%"></div>
+                    </div>
+                    <p class="text-right text-xs text-gray-400 mt-1">${count} ${unit}</p>
+                `;
+                statsContainer.appendChild(statDiv);
             });
         }
 
         // Add markers and update nearest locations list
-        function addMarkers(filteredLocations, userLonLat) {
-            vectorSource.clear();
+        async function addMarkers(filteredLocations, userLatLon) {
+            markers.clearLayers();
             const nearestLocationsList = document.getElementById('nearest-locations');
             nearestLocationsList.innerHTML = '';
 
+            if (filteredLocations.length === 0) {
+                nearestLocationsList.innerHTML =
+                    `<li class="text-gray-400 text-center py-4">Tidak ada laporan ditemukan.</li>`;
+            }
+
+            const uniqueLocations = {};
             filteredLocations.forEach(loc => {
-                // Skip locations with invalid coordinates
-                if (!loc.coords || !loc.coords[0] || !loc.coords[1] || isNaN(loc.coords[0]) || isNaN(loc.coords[
-                    1])) {
+                if (!loc.coords || loc.coords.length !== 2 || isNaN(loc.coords[0]) || isNaN(loc.coords[1])) {
                     console.warn('Invalid coordinates for:', loc.name, loc.coords);
                     return;
                 }
 
-                const lonLat = loc.coords;
-                const distance = userLonLat ? calculateDistance(userLonLat[0], userLonLat[1], lonLat[0], lonLat[
-                    1]) : 0;
+                const [lat, lon] = loc.coords;
+                const key = `${lat},${lon}`;
+                if (!uniqueLocations[key]) {
+                    const distance = userLatLon ? calculateDistance(userLatLon[0], userLatLon[1], lat, lon) : 0;
 
-                const iconFeature = new ol.Feature({
-                    geometry: new ol.geom.Point(ol.proj.fromLonLat(lonLat)),
-                    name: loc.name,
-                    address: loc.address,
-                    type: loc.type,
-                    capacity: loc.capacity,
-                    urgency: loc.urgency,
-                    description: loc.description,
-                    photos: loc.photos,
-                    distance: distance.toFixed(1) + ' km'
-                });
+                    const marker = L.marker([lat, lon], {
+                        icon: getMarkerIcon()
+                    }).bindPopup(`
+                        <div class="p-3">
+                            <h4 class="font-bold text-gray-900 text-base mb-2">${loc.name}</h4>
+                            <p class="text-gray-700 text-sm mb-1"><strong>Alamat:</strong> ${loc.address}</p>
+                            <p class="text-gray-700 text-sm mb-1"><strong>Jenis:</strong> ${loc.type.charAt(0).toUpperCase() + loc.type.slice(1)}</p>
+                            <p class="text-gray-700 text-sm mb-1"><strong>Ukuran:</strong> ${loc.capacity}</p>
+                            <p class="text-gray-700 text-sm mb-1"><strong>Urgensi:</strong> ${loc.urgency}</p>
+                            <p class="text-gray-700 text-sm mb-2"><strong>Deskripsi:</strong> ${loc.description}</p>
+                            ${loc.photos && loc.photos.length > 0 ? '<p class="text-gray-700 text-sm mb-1"><strong>Foto:</strong></p>' + loc.photos.map(photo => `<img src="${photo}" alt="Waste Photo" class="w-full mt-1 rounded-md shadow-sm">`).join('') : ''}
+                        </div>
+                    `, {
+                        className: 'popup-content',
+                        autoPanPadding: [50, 50]
+                    });
+                    markers.addLayer(marker);
 
-                iconFeature.setStyle(getMarkerStyle(loc.type));
-                vectorSource.addFeature(iconFeature);
-
-                const radius = parseInt(document.getElementById('radius').value);
-                if (!userLonLat || distance <= radius) {
-                    const li = document.createElement('li');
-                    li.className = 'border-b border-gray-600 pb-4 transition hover:bg-[#1e293b]/50 rounded-lg px-2';
-                    li.innerHTML = `
-                        <h4 class="font-semibold text-white">${loc.name}</h4>
-                        <p class="text-gray-300 text-sm">${loc.address}</p>
-                        <p class="text-gray-300 text-sm">Jenis: ${loc.type}</p>
-                        <p class="text-gray-300 text-sm">Ukuran: ${loc.capacity}</p>
-                        <p class="text-gray-300 text-sm">Urgensi: ${loc.urgency}</p>
-                        <p class="text-gray-300 text-sm">${distance.toFixed(1)} km dari lokasi Anda</p>
-                    `;
-                    nearestLocationsList.appendChild(li);
+                    const radius = parseInt(document.getElementById('radius').value);
+                    if (!userLatLon || distance <= radius || radius === 0) {
+                        const li = document.createElement('li');
+                        li.className =
+                            'border-b border-gray-200 pb-3 transition hover:bg-gray-100 rounded-md px-2 py-2 cursor-pointer text-gray-700';
+                        li.innerHTML = `
+                            <h4 class="font-semibold text-gray-900 text-sm">${loc.name}</h4>
+                            <p class="text-gray-600 text-xs">${loc.address}</p>
+                            <p class="text-gray-600 text-xs">Jenis: ${loc.type.charAt(0).toUpperCase() + loc.type.slice(1)}</p>
+                            <p class="text-gray-600 text-xs">Ukuran: ${loc.capacity}</p>
+                            <p class="text-gray-600 text-xs">Urgensi: ${loc.urgency}</p>
+                            ${userLatLon ? `<p class="text-gray-600 text-xs">${distance.toFixed(1)} km dari lokasi Anda</p>` : ''}
+                            ${loc.city && loc.city !== 'UnknownCity' ? `<p class="text-gray-600 text-xs">Kota: ${loc.city}</p>` : ''}
+                            ${loc.province && loc.province !== 'UnknownProvince' ? `<p class="text-gray-600 text-xs">Provinsi: ${loc.province}</p>` : ''}
+                        `;
+                        li.addEventListener('click', () => {
+                            map.setView([lat, lon], 14);
+                            marker.openPopup();
+                        });
+                        nearestLocationsList.appendChild(li);
+                    }
+                    uniqueLocations[key] = true;
                 }
             });
 
-            const extent = vectorSource.getExtent();
-            if (!vectorSource.isEmpty()) {
-                map.getView().fit(extent, {
-                    padding: [100, 100, 100, 100],
-                    maxZoom: 10
+            if (markers.getLayers().length > 0) {
+                map.fitBounds(markers.getBounds(), {
+                    padding: [50, 50],
+                    maxZoom: 14
                 });
             } else {
-                console.warn('No valid locations to display on the map.');
+                console.warn('No valid locations to display on the map after filtering.');
+                map.setView([-2.5489, 118.0149], 5); // Center to Indonesia
             }
         }
 
-        // Utility Functions
-        function calculateDistance(lon1, lat1, lon2, lat2) {
-            const R = 6371;
+        // Utility function to calculate distance (Haversine formula)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of Earth in kilometers
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
+            return R * c; // Distance in kilometers
         }
 
-        // Initial marker load
-        const wastePoints = @json($wastePoints);
-        console.log('Waste Points:', wastePoints); // Debug: Check data
-        addMarkers(wastePoints, null);
+        // Initial data load and map setup
+        async function initializeMap() {
+            const {
+                reports,
+                provinceReports,
+                cityReports
+            } = await fetchWastePoints();
+            console.log('Waste Points Loaded:', reports);
+            addMarkers(reports, null);
 
-        // Popup on click
-        map.on('click', function(evt) {
-            const feature = map.forEachFeatureAtPixel(evt.pixel, function(feature) {
-                return feature;
-            });
+            // Update area statistics
+            updateAreaStatistics(reports);
 
-            if (feature) {
-                const coordinates = feature.getGeometry().getCoordinates();
-                popup.setPosition(coordinates);
-                popup.getElement().innerHTML = `
-                    <h4 class="font-bold text-gray-800">${feature.get('name')}</h4>
-                    <p class="text-gray-600">${feature.get('address')}</p>
-                    <p class="text-gray-600">Jenis: ${feature.get('type')}</p>
-                    <p class="text-gray-600">Ukuran: ${feature.get('capacity')}</p>
-                    <p class="text-gray-600">Urgensi: ${feature.get('urgency')}</p>
-                    <p class="text-gray-600">Deskripsi: ${feature.get('description')}</p>
-                    <p class="text-gray-600">Jarak: ${feature.get('distance')}</p>
-                    ${feature.get('photos').length > 0 ? '<p class="text-gray-600">Foto:</p>' + feature.get('photos').map(photo => `<img src="/storage/${photo}" alt="Waste Photo" class="w-full mt-2 rounded">`).join('') : ''}
-                `;
-            } else {
-                popup.setPosition(undefined);
-            }
-        });
+            // Aggregate reports by province and city (already done in backend)
+            console.log('Aggregated Province Reports:', provinceReports);
+            console.log('Aggregated City Reports:', cityReports);
 
-        // Search functionality
-        document.getElementById('searchButton').addEventListener('click', () => {
+            // Load province GeoJSON (gadm41_IDN_1.json)
+            const provinceGeoJsonPromise = fetch('{{ asset('storage/gadm41_IDN_1.json') }}')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load Province GeoJSON: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.error('Error loading Province GeoJSON:', error);
+                    return null;
+                });
+
+            // Load city GeoJSON (gadm41_IDN_2.json)
+            const cityGeoJsonPromise = fetch('{{ asset('storage/gadm41_IDN_2.json') }}')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load City GeoJSON: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.error('Error loading City GeoJSON:', error);
+                    return null;
+                });
+
+            // Wait for both GeoJSON files to load
+            Promise.all([provinceGeoJsonPromise, cityGeoJsonPromise])
+                .then(([provinceGeoJson, cityGeoJson]) => {
+                    if (!provinceGeoJson || !cityGeoJson) {
+                        console.error('One or both GeoJSON files failed to load.');
+                        return;
+                    }
+
+                    console.log('Province GeoJSON Data:', provinceGeoJson);
+                    console.log('City GeoJSON Data:', cityGeoJson);
+
+                    // Calculate centroids for provinces
+                    const provinceCentroids = {};
+                    provinceGeoJson.features.forEach(feature => {
+                        const bounds = L.geoJSON(feature).getBounds();
+                        if (bounds.isValid()) {
+                            provinceCentroids[feature.properties.NAME_1] = bounds.getCenter();
+                        } else {
+                            console.warn("Invalid bounds for Province GeoJSON feature:", feature.properties
+                                .NAME_1);
+                        }
+                    });
+
+                    // Calculate centroids for cities
+                    const cityCentroids = {};
+                    cityGeoJson.features.forEach(feature => {
+                        const bounds = L.geoJSON(feature).getBounds();
+                        if (bounds.isValid()) {
+                            cityCentroids[feature.properties.NAME_2] = bounds.getCenter();
+                        } else {
+                            console.warn("Invalid bounds for City GeoJSON feature:", feature.properties
+                                .NAME_2);
+                        }
+                    });
+
+                    // Function to get circle options based on report count
+                    function getCircleOptions(reports) {
+                        if (reports >= 16) {
+                            return {
+                                color: '#b30000',
+                                fillColor: '#b30000',
+                                radius: 60000
+                            };
+                        } else if (reports >= 8) {
+                            return {
+                                color: '#ff4500',
+                                fillColor: '#ff4500',
+                                radius: 50000
+                            };
+                        } else if (reports >= 4) {
+                            return {
+                                color: '#ff8c00',
+                                fillColor: '#ff8c00',
+                                radius: 45000
+                            };
+                        } else if (reports > 0) {
+                            return {
+                                color: '#ffd700',
+                                fillColor: '#ffd700',
+                                radius: 40000
+                            };
+                        } else {
+                            return {
+                                color: '#32cd32',
+                                fillColor: '#32cd32',
+                                radius: 30000
+                            };
+                        }
+                    }
+
+                    const provinceCircleLayerGroup = L.layerGroup();
+                    const cityCircleLayerGroup = L.layerGroup();
+
+                    function updateMapFeatures() {
+                        provinceCircleLayerGroup.clearLayers();
+                        cityCircleLayerGroup.clearLayers();
+                        map.eachLayer(layer => {
+                            if (layer instanceof L.Marker && !markers.hasLayer(layer) && layer.options
+                                .icon &&
+                                layer.options.icon.options.iconUrl ===
+                                'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png') {
+                                map.removeLayer(layer);
+                            }
+                        });
+
+                        // Province circles
+                        provinceGeoJson.features.forEach(feature => {
+                            const provinceName = feature.properties.NAME_1;
+                            const reports = provinceReports[provinceName] || 0;
+                            const centroid = provinceCentroids[provinceName];
+                            if (centroid && map.getZoom() < 8) {
+                                const circle = L.circle(centroid, {
+                                    ...getCircleOptions(reports),
+                                    fillOpacity: 0.5,
+                                    className: 'waste-circle'
+                                });
+                                const numberIcon = L.divIcon({
+                                    className: 'waste-circle-label',
+                                    html: `<span>${reports}</span>`,
+                                    iconSize: [40, 40],
+                                    iconAnchor: [20, 20]
+                                });
+                                const numberMarker = L.marker(centroid, {
+                                    icon: numberIcon
+                                });
+                                circle.bindTooltip(`<b>${provinceName}</b><br>${reports} laporan`, {
+                                    permanent: false,
+                                    className: 'leaflet-tooltip',
+                                    direction: 'center',
+                                    opacity: 0.9
+                                }).bindPopup(`<b>${provinceName}</b><br>Jumlah Laporan: ${reports}`);
+                                provinceCircleLayerGroup.addLayer(circle);
+                                provinceCircleLayerGroup.addLayer(numberMarker);
+                            }
+                        });
+
+                        // City circles
+                        cityGeoJson.features.forEach(feature => {
+                            const cityName = feature.properties.NAME_2;
+                            const reports = cityReports[cityName] || 0;
+                            const centroid = cityCentroids[cityName];
+                            if (centroid && map.getZoom() >= 8) {
+                                const circle = L.circle(centroid, {
+                                    ...getCircleOptions(reports),
+                                    fillOpacity: 0.5,
+                                    className: 'waste-circle'
+                                });
+                                const numberIcon = L.divIcon({
+                                    className: 'waste-circle-label',
+                                    html: `<span>${reports}</span>`,
+                                    iconSize: [40, 40],
+                                    iconAnchor: [20, 20]
+                                });
+                                const numberMarker = L.marker(centroid, {
+                                    icon: numberIcon
+                                });
+                                circle.bindTooltip(`<b>${cityName}</b><br>${reports} laporan`, {
+                                    permanent: false,
+                                    className: 'leaflet-tooltip',
+                                    direction: 'center',
+                                    opacity: 0.9
+                                }).bindPopup(`<b>${cityName}</b><br>Jumlah Laporan: ${reports}`);
+                                cityCircleLayerGroup.addLayer(circle);
+                                cityCircleLayerGroup.addLayer(numberMarker);
+                            }
+                        });
+                    }
+
+                    updateMapFeatures();
+                    map.on('zoomend', updateMapFeatures);
+
+                    // Choropleth color function
+                    function getChoroplethColor(d) {
+                        return d > 100 ? '#800000' :
+                            d > 50 ? '#b30000' :
+                            d > 20 ? '#e34a33' :
+                            d > 10 ? '#fc8d59' :
+                            d > 0 ? '#fdcc8a' :
+                            '#f7f7f7';
+                    }
+
+                    // Province choropleth using gadm41_IDN_1.json
+                    function styleProvince(feature) {
+                        const provinceName = feature.properties.NAME_1;
+                        const reports = provinceReports[provinceName] || 0;
+                        return {
+                            fillColor: getChoroplethColor(reports),
+                            weight: 2,
+                            opacity: 1,
+                            color: 'white',
+                            dashArray: '3',
+                            fillOpacity: 0.7
+                        };
+                    }
+
+                    // City choropleth using gadm41_IDN_2.json
+                    function styleCity(feature) {
+                        const cityName = feature.properties.NAME_2;
+                        const reports = cityReports[cityName] || 0;
+                        return {
+                            fillColor: getChoroplethColor(reports),
+                            weight: 2,
+                            opacity: 1,
+                            color: 'white',
+                            dashArray: '3',
+                            fillOpacity: 0.7
+                        };
+                    }
+
+                    let info = L.control();
+                    info.onAdd = function(map) {
+                        this._div = L.DomUtil.create('div', 'info');
+                        this.update();
+                        return this._div;
+                    };
+                    info.update = function(props) {
+                        this._div.innerHTML = '<h4>Jumlah Laporan Sampah</h4>' + (props ?
+                            `<b>${props.NAME_1 || props.NAME_2}</b><br />${(provinceReports[props.NAME_1] || cityReports[props.NAME_2] || 0)} laporan` :
+                            'Arahkan kursor ke provinsi/kota');
+                    };
+
+                    function highlightFeature(e) {
+                        const layer = e.target;
+                        layer.setStyle({
+                            weight: 5,
+                            color: '#22d3ee',
+                            dashArray: '',
+                            fillOpacity: 0.7
+                        });
+                        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                            layer.bringToFront();
+                        }
+                        info.update(layer.feature.properties);
+                    }
+
+                    function resetHighlightProvince(e) {
+                        provinceChoroplethLayer.resetStyle(e.target);
+                        info.update();
+                    }
+
+                    function resetHighlightCity(e) {
+                        cityChoroplethLayer.resetStyle(e.target);
+                        info.update();
+                    }
+
+                    function zoomToFeature(e) {
+                        map.fitBounds(e.target.getBounds());
+                    }
+
+                    // Province choropleth layer using gadm41_IDN_1.json
+                    const provinceChoroplethLayer = L.geoJSON(provinceGeoJson, {
+                        style: styleProvince,
+                        onEachFeature: function(feature, layer) {
+                            const provinceName = feature.properties.NAME_1;
+                            const reports = provinceReports[provinceName] || 0;
+                            feature.properties.reports = reports;
+                            layer.bindTooltip(`<b>${provinceName}</b><br>${reports} laporan`, {
+                                sticky: true,
+                                className: 'leaflet-tooltip',
+                                opacity: 0.9
+                            });
+                            layer.on({
+                                mouseover: highlightFeature,
+                                mouseout: resetHighlightProvince,
+                                click: zoomToFeature
+                            });
+                        }
+                    });
+
+                    // City choropleth layer using gadm41_IDN_2.json
+                    const cityChoroplethLayer = L.geoJSON(cityGeoJson, {
+                        style: styleCity,
+                        onEachFeature: function(feature, layer) {
+                            const cityName = feature.properties.NAME_2;
+                            const reports = cityReports[cityName] || 0;
+                            feature.properties.reports = reports;
+                            layer.bindTooltip(`<b>${cityName}</b><br>${reports} laporan`, {
+                                sticky: true,
+                                className: 'leaflet-tooltip',
+                                opacity: 0.9
+                            });
+                            layer.on({
+                                mouseover: highlightFeature,
+                                mouseout: resetHighlightCity,
+                                click: zoomToFeature
+                            });
+                        }
+                    });
+
+                    const legend = L.control({
+                        position: 'bottomright'
+                    });
+                    legend.onAdd = function(map) {
+                        const div = L.DomUtil.create('div', 'info legend'),
+                            grades = [0, 10, 20, 50, 100],
+                            labels = [];
+                        labels.push('<i style="background:#32cd32"></i> 0 laporan');
+                        labels.push('<i style="background:#fdcc8a"></i> 1–10 laporan');
+                        labels.push('<i style="background:#fc8d59"></i> 11–20 laporan');
+                        labels.push('<i style="background:#e34a33"></i> 21–50 laporan');
+                        labels.push('<i style="background:#b30000"></i> 51–100 laporan');
+                        labels.push('<i style="background:#800000"></i> > 100 laporan');
+                        div.innerHTML = labels.join('<br>');
+                        return div;
+                    };
+
+                    const baseMaps = {
+                        "Peta": osmLayer,
+                        "Satelit": satelliteLayer
+                    };
+                    const overlayMaps = {
+                        "Marker Laporan Sampah": markers,
+                        "Choropleth (Laporan per Provinsi)": provinceChoroplethLayer,
+                        "Choropleth (Laporan per Kota)": cityChoroplethLayer,
+                        "Lingkaran Laporan Provinsi": provinceCircleLayerGroup,
+                        "Lingkaran Laporan Kota": cityCircleLayerGroup
+                    };
+                    const layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+                    map.on('overlayadd', function(e) {
+                        if (e.name === 'Choropleth (Laporan per Provinsi)' || e.name ===
+                            'Choropleth (Laporan per Kota)') {
+                            info.addTo(map);
+                            legend.addTo(map);
+                        }
+                        if (e.name === 'Lingkaran Laporan Provinsi') {
+                            updateMapFeatures();
+                        }
+                        if (e.name === 'Lingkaran Laporan Kota') {
+                            updateMapFeatures();
+                        }
+                    });
+                    map.on('overlayremove', function(e) {
+                        if (e.name === 'Choropleth (Laporan per Provinsi)' || e.name ===
+                            'Choropleth (Laporan per Kota)') {
+                            map.removeControl(info);
+                            map.removeControl(legend);
+                        }
+                        if (e.name === 'Lingkaran Laporan Provinsi') {
+                            provinceCircleLayerGroup.clearLayers();
+                        }
+                        if (e.name === 'Lingkaran Laporan Kota') {
+                            cityCircleLayerGroup.clearLayers();
+                        }
+                    });
+
+                    map.on('baselayerchange', function(e) {
+                        localStorage.setItem('mapLayer', e.name.toLowerCase());
+                    });
+
+                    provinceChoroplethLayer.addTo(map);
+                    info.addTo(map);
+                    legend.addTo(map);
+                });
+        }
+
+        initializeMap();
+
+        document.getElementById('searchButton').addEventListener('click', async () => {
             const locationInput = document.getElementById('location').value;
             const type = document.getElementById('type').value;
             const radius = parseInt(document.getElementById('radius').value);
 
-            const userLonLat = locationInput ? [112.6290, -7.2330] : null; // Surabaya as default
+            let userLatLon = null;
+            if (locationInput) {
+                try {
+                    const geoResponse = await fetch(
+                        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationInput)}&format=json&limit=1`
+                    );
+                    const geoData = await geoResponse.json();
+                    if (geoData && geoData.length > 0) {
+                        userLatLon = [parseFloat(geoData[0].lat), parseFloat(geoData[0].lon)];
+                        alert(`Lokasi ditemukan: ${geoData[0].display_name}`);
+                    } else {
+                        alert('Lokasi tidak ditemukan. Filter berdasarkan jenis dan radius saja.');
+                    }
+                } catch (geoError) {
+                    console.error('Error geocoding location:', geoError);
+                    alert('Gagal mencari lokasi. Filter berdasarkan jenis dan radius saja.');
+                }
+            }
 
-            let filteredLocations = wastePoints;
-            if (type) filteredLocations = wastePoints.filter(loc => loc.type === type);
-            if (userLonLat) filteredLocations = filteredLocations.filter(loc => {
-                const distance = calculateDistance(userLonLat[0], userLonLat[1], loc.coords[0], loc.coords[
-                    1]);
-                return distance <= radius;
-            });
+            const {
+                reports
+            } = await fetchWastePoints();
+            let filteredLocations = reports;
 
-            addMarkers(filteredLocations, userLonLat);
+            if (type) {
+                filteredLocations = filteredLocations.filter(loc => loc.type === type);
+            }
+
+            if (userLatLon && radius > 0) {
+                filteredLocations = filteredLocations.filter(loc => {
+                    if (loc.coords && loc.coords.length === 2 && !isNaN(loc.coords[0]) && !isNaN(loc
+                            .coords[1])) {
+                        const distance = calculateDistance(userLatLon[0], userLatLon[1], loc.coords[0],
+                            loc.coords[1]);
+                        return distance <= radius;
+                    }
+                    return false;
+                });
+            }
+
+            addMarkers(filteredLocations, userLatLon);
+            updateAreaStatistics(filteredLocations);
         });
 
-        // Reset Map Button Functionality
-        document.getElementById('resetMapButton').addEventListener('click', () => {
-            map.getView().setCenter(ol.proj.fromLonLat([113.9213, -0.7893]));
-            map.getView().setZoom(5);
-            addMarkers(wastePoints, null);
-            popup.setPosition(undefined);
+        document.getElementById('resetMapButton').addEventListener('click', async () => {
+            map.setView([-2.5489, 118.0149], 5);
+            const {
+                reports
+            } = await fetchWastePoints();
+            addMarkers(reports, null);
+            updateAreaStatistics(reports);
+            map.closePopup();
+            document.getElementById('location').value = '';
+            document.getElementById('type').value = '';
+            document.getElementById('radius').value = '10';
         });
     </script>
 @endsection
