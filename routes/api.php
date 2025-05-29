@@ -31,4 +31,3 @@ Route::get('/reports/province-counts', [ReportController::class, 'getReportsByPr
 Route::get('/reports/city-counts', [ReportController::class, 'getReportsByCity']);
 
 // Example web route (if not already defined in web.php)
-Route::get('/map', [MapController::class, 'map'])->name('map');

@@ -32,11 +32,17 @@ Route::middleware('auth')->group(function () {
 });
 
 // Rute Admin
-Route::view('/admin/dashboard', 'admin.index');
+Route::view('/admin/dashboard', 'admin.index')->name('admin.dashboard'); // <-- Tambahkan ini
 Route::get('/admin/reports', function () {
     $reports = Report::paginate(10);
     return view('admin.reports', compact('reports'));
-});
+})->name('admin.reports'); // <-- Sangat disarankan untuk memberi nama semua rute Anda
+Route::get('/admin/setting', function () {
+    return view('admin.setting');
+})->name('admin.setting');
+Route::get('/admin/mitra', function () {
+    return view('admin.mitra');
+})->name('admin.mitra');
 
 // Rute API untuk laporan
 Route::get('/api/reports', [ReportController::class, 'getReports']);

@@ -91,7 +91,7 @@
                 dan kolaborasi sosial.
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                @foreach ([['name' => 'Arfian Putra Pratama', 'title' => 'Founder & CEO', 'desc' => 'Budi memiliki pengalaman lebih dari 10 tahun dalam bidang teknologi dan lingkungan.'], ['name' => 'Tegar Eka Pambudi El Akhsan', 'title' => 'CTO', 'desc' => 'Siti adalah ahli teknologi dengan fokus pada pengembangan platform berbasis data.'], ['name' => 'Ferdynata Rafi Hardiyanto', 'title' => 'Head of Partnerships', 'desc' => 'Ahmad membangun hubungan dengan pemerintah dan mitra industri untuk memperluas jangkauan EcoTrack.']] as $member)
+                @foreach ([['name' => 'Arfian Putra Pratama', 'title' => 'Anggota', 'desc' => 'Arfian memiliki pengalaman lebih dari 10 tahun dalam bidang teknologi dan lingkungan.'], ['name' => 'Tegar Eka Pambudi El Akhsan', 'title' => 'Leader', 'desc' => 'Tegar adalah ahli teknologi dengan fokus pada pengembangan platform berbasis data.'], ['name' => 'Ferdynata Rafi Hardiyanto', 'title' => 'Anggota', 'desc' => 'Ferdynata membangun hubungan dengan pemerintah dan mitra industri untuk memperluas jangkauan EcoTrack.']] as $member)
                     <div
                         class="bg-[rgba(15,23,42,0.5)] hover:bg-[rgba(15,23,42,0.7)] transition-colors duration-300 border border-[#1E293B] p-8 rounded-xl text-center">
                         <div
@@ -244,58 +244,53 @@
         </div>
     </section>
 
-    <div class="">
-        <h2 class="text-3xl font-bold mb-2 text-center text-white">Hubungi Kami</h2>
-        <p class="text-center text-indigo-200 mb-8">Kami senang mendengar dari Anda! Jangan ragu mengirimkan pesan atau
-            pertanyaan.</p>
+    <!-- Contact Us Section -->
+    <div class="max-w-4xl mx-auto px-4 py-16">
+        <h2 class="text-4xl font-extrabold mb-4 text-center text-white">Hubungi Kami</h2>
+        <p class="text-center text-green-300 mb-10 text-lg">Kami senang mendengar dari Anda! Silakan kirim pesan,
+            pertanyaan, atau saran Anda di bawah ini.</p>
 
         <form action="" method="POST"
-            style="position: relative;
-           background-color: rgba(203, 213, 225, 0.1);
-           border: 3px solid rgba(255, 255, 255, 0.5);
-           border-radius: 15px 40px 40px 15px;
-           backdrop-filter: blur(17.5px);
-           -webkit-backdrop-filter: blur(17.5px);
-           transition: background-color 0.3s ease;"
-            onmouseover="this.style.backgroundColor='rgba(203, 213, 225, 0.2)';"
-            onmouseout="this.style.backgroundColor='rgba(203, 213, 225, 0.1)';" class="p-8 space-y-6 shadow-lg">
+            class="bg-[#1a2e21] border border-green-700/40 backdrop-blur-xl rounded-3xl p-8 shadow-xl transition-all duration-300 hover:shadow-2xl hover:border-green-500/60">
             @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label for="first_name" class="block text-sm font-medium text-white">Nama Awal</label>
+                    <label for="first_name" class="block text-sm font-semibold text-green-200 mb-1">Nama Awal</label>
                     <input type="text" id="first_name" name="first_name" required
-                        class="mt-1 block w-full rounded-lg border border-white/40 bg-white/10 text-white placeholder-white/70 shadow-sm focus:ring-indigo-400 focus:border-indigo-400">
+                        class="w-full bg-[#2e4636] border border-green-700/50 text-white placeholder:text-green-300/60 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                        placeholder="Nama depan Anda">
                 </div>
-
                 <div>
-                    <label for="last_name" class="block text-sm font-medium text-white">Nama Akhir</label>
+                    <label for="last_name" class="block text-sm font-semibold text-green-200 mb-1">Nama Akhir</label>
                     <input type="text" id="last_name" name="last_name" required
-                        class="mt-1 block w-full rounded-lg border border-white/40 bg-white/10 text-white placeholder-white/70 shadow-sm focus:ring-indigo-400 focus:border-indigo-400">
+                        class="w-full bg-[#2e4636] border border-green-700/50 text-white placeholder:text-green-300/60 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                        placeholder="Nama belakang Anda">
                 </div>
             </div>
 
-            <div>
-                <label for="email" class="block text-sm font-medium text-white">Email</label>
+            <div class="mb-6">
+                <label for="email" class="block text-sm font-semibold text-green-200 mb-1">Email</label>
                 <input type="email" id="email" name="email" required
-                    class="mt-1 block w-full rounded-lg border border-white/40 bg-white/10 text-white placeholder-white/70 shadow-sm focus:ring-indigo-400 focus:border-indigo-400">
+                    class="w-full bg-[#2e4636] border border-green-700/50 text-white placeholder:text-green-300/60 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                    placeholder="email@example.com">
             </div>
 
-            <div>
-                <label for="subject" class="block text-sm font-medium text-white">Tujuan</label>
+            <div class="mb-6">
+                <label for="subject" class="block text-sm font-semibold text-green-200 mb-1">Tujuan</label>
                 <input type="text" id="subject" name="subject" placeholder="Misalnya: Kritik, Saran, Kolaborasi"
-                    class="mt-1 block w-full rounded-lg border border-white/40 bg-white/10 text-white placeholder-white/70 shadow-sm focus:ring-indigo-400 focus:border-indigo-400">
+                    class="w-full bg-[#2e4636] border border-green-700/50 text-white placeholder:text-green-300/60 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition">
             </div>
 
-            <div>
-                <label for="message" class="block text-sm font-medium text-white">Deskripsi</label>
+            <div class="mb-6">
+                <label for="message" class="block text-sm font-semibold text-green-200 mb-1">Deskripsi</label>
                 <textarea id="message" name="message" rows="5" required
-                    class="mt-1 block w-full rounded-lg border border-white/40 bg-white/10 text-white placeholder-white/70 shadow-sm focus:ring-indigo-400 focus:border-indigo-400"
+                    class="w-full bg-[#2e4636] border border-green-700/50 text-white placeholder:text-green-300/60 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
                     placeholder="Tulis pesan Anda di sini..."></textarea>
             </div>
 
             <div class="text-center">
                 <button type="submit"
-                    class="bg-indigo-700 bg-opacity-90 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-600 transition">
+                    class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-500 transition ease-in-out duration-200 shadow-md">
                     Kirim Pesan
                 </button>
             </div>

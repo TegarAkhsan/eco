@@ -29,10 +29,10 @@
 
             <div class="grid md:grid-cols-2 gap-8">
                 <div class="bg-blue-700/90 text-white p-6 rounded-lg space-y-6">
+                    {{-- Contact Information (Tidak berubah) --}}
                     <h2 class="text-xl font-semibold">Contact Information</h2>
                     <p class="text-sm text-gray-200">Empowering communities with innovative tools for waste management and
                         environmental protection</p>
-
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M4 4h16v16H4z" fill="none" />
@@ -60,21 +60,21 @@
                 <form action="{{ route('report.submit') }}" method="POST" enctype="multipart/form-data"
                     class="space-y-5 text-white relative" id="reportForm">
                     @csrf
-
+                    {{-- Input Nama dan Email (Tidak berubah signifikan) --}}
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Nama</label>
-                        <input type="text" name="name" id="name" placeholder="Nama" required
-                            value="{{ old('name') }}"
+                        <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Nama
+                            Laporan/Pelapor</label>
+                        <input type="text" name="name" id="name" placeholder="Mis: Tumpukan Sampah Depan Toko"
+                            required value="{{ old('name') }}"
                             class="w-full px-4 py-3 pr-10 rounded-xl bg-[#1e293b] border border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 @error('name') border-red-500 @enderror"
                             aria-label="Nama">
                         @error('name')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
-                        <input type="email" name="email" id="email" placeholder="Email" required
+                        <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email (Opsional)</label>
+                        <input type="email" name="email" id="email" placeholder="Email Anda (opsional)"
                             value="{{ old('email') }}"
                             class="w-full px-4 py-3 pr-10 rounded-xl bg-[#1e293b] border border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 @error('email') border-red-500 @enderror"
                             aria-label="Email">
@@ -83,110 +83,130 @@
                         @enderror
                     </div>
 
+                    {{-- Input Lokasi --}}
                     <div>
-                        <label for="location" class="block text-sm font-medium text-gray-300 mb-1">Lokasi Titik
+                        <label for="location_text" class="block text-sm font-medium text-gray-300 mb-1">Alamat/Detail Lokasi
                             Sampah</label>
-                        <input type="text" name="location" id="location"
-                            placeholder="Masukkan alamat atau gunakan lokasi saat ini" required
-                            value="{{ old('location') }}"
-                            class="w-full px-4 py-3 pr-10 rounded-xl bg-[#1e293b] border border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 @error('location') border-red-500 @enderror"
-                            aria-label="Lokasi Titik Sampah">
-                        <button type="button" id="getLocation"
-                            class="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300">
-                            Gunakan Lokasi Saat Ini
-                        </button>
+                        <textarea name="location" id="location_text" rows="3" placeholder="Masukkan alamat atau detail lokasi sampah"
+                            required
+                            class="w-full px-4 py-3 rounded-xl bg-[#1e293b] border border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 @error('location') border-red-500 @enderror"
+                            aria-label="Lokasi Titik Sampah">{{ old('location') }}</textarea>
+                        <div class="flex items-center space-x-3 mt-2">
+                            <button type="button" id="getLocationButton"
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300 text-sm">
+                                📍 Gunakan Lokasi GPS
+                            </button>
+                            <button type="button" id="geocodeAddressButton"
+                                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300 text-sm">
+                                Cari Alamat di Peta
+                            </button>
+                        </div>
+                        <p id="geolocation_status" class="text-xs mt-2 min-h-[1em]"></p>
                         @error('location')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
+                    {{-- Peta Kecil untuk Pemilihan/Konfirmasi Lokasi --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Pinpoint di Peta (Klik atau Geser
+                            Marker):</label>
+                        <div id="reportMap" style="height: 300px; border-radius: 10px;" class="mb-2"></div>
+                    </div>
+
+
                     <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
                     <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
+                    <input type="hidden" name="province" id="province" value="{{ old('province') }}">
+                    <input type="hidden" name="city" id="city" value="{{ old('city') }}">
 
-                    <div class="relative">
-                        <label for="type" class="block text-sm font-medium text-gray-300 mb-1">Jenis Sampah</label>
-                        <select name="type" id="type" required
-                            class="w-full px-4 py-3 pr-10 rounded-xl bg-[#1e293b] border border-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 @error('type') border-red-500 @enderror"
-                            aria-label="Pilih Jenis Sampah">
-                            <option value="">Pilih Jenis Sampah</option>
-                            <option value="organik" {{ old('type') == 'organik' ? 'selected' : '' }}>Organik</option>
-                            <option value="anorganik" {{ old('type') == 'anorganik' ? 'selected' : '' }}>Anorganik</option>
-                            <option value="b3" {{ old('type') == 'b3' ? 'selected' : '' }}>Berbahaya (B3)</option>
-                            <option value="campuran" {{ old('type') == 'campuran' ? 'selected' : '' }}>Campuran</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-4 top-6 flex items-center pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path d="M19 9l-7 7-7-7" />
-                            </svg>
+                    {{-- Input Jenis, Ukuran, Urgensi (Tidak berubah signifikan) --}}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="relative">
+                            <label for="type" class="block text-sm font-medium text-gray-300 mb-1">Jenis Sampah</label>
+                            <select name="type" id="type" required
+                                class="w-full px-4 py-3 pr-10 rounded-xl bg-[#1e293b] border border-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 @error('type') border-red-500 @enderror"
+                                aria-label="Pilih Jenis Sampah">
+                                <option value="">Pilih Jenis</option>
+                                <option value="organik" {{ old('type') == 'organik' ? 'selected' : '' }}>Organik</option>
+                                <option value="anorganik" {{ old('type') == 'anorganik' ? 'selected' : '' }}>Anorganik
+                                </option>
+                                <option value="b3" {{ old('type') == 'b3' ? 'selected' : '' }}>B3</option>
+                                <option value="campuran" {{ old('type') == 'campuran' ? 'selected' : '' }}>Campuran
+                                </option>
+                            </select>
+                            <div class="absolute inset-y-0 right-4 top-6 flex items-center pointer-events-none"><svg
+                                    class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M19 9l-7 7-7-7" />
+                                </svg></div>
+                            @error('type')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
-                        @error('type')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                        <div class="relative">
+                            <label for="size" class="block text-sm font-medium text-gray-300 mb-1">Estimasi
+                                Ukuran</label>
+                            <select name="size" id="size" required
+                                class="w-full px-4 py-3 pr-10 rounded-xl bg-[#1e293b] border border-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 @error('size') border-red-500 @enderror"
+                                aria-label="Pilih Estimasi Ukuran">
+                                <option value="">Pilih Ukuran</option>
+                                <option value="kecil" {{ old('size') == 'kecil' ? 'selected' : '' }}>Kecil</option>
+                                <option value="sedang" {{ old('size') == 'sedang' ? 'selected' : '' }}>Sedang</option>
+                                <option value="besar" {{ old('size') == 'besar' ? 'selected' : '' }}>Besar</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-4 top-6 flex items-center pointer-events-none"><svg
+                                    class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M19 9l-7 7-7-7" />
+                                </svg></div>
+                            @error('size')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="relative">
+                            <label for="urgency" class="block text-sm font-medium text-gray-300 mb-1">Urgensi</label>
+                            <select name="urgency" id="urgency" required
+                                class="w-full px-4 py-3 pr-10 rounded-xl bg-[#1e293b] border border-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 @error('urgency') border-red-500 @enderror"
+                                aria-label="Pilih Urgensi">
+                                <option value="">Pilih Urgensi</option>
+                                <option value="rendah" {{ old('urgency') == 'rendah' ? 'selected' : '' }}>Rendah</option>
+                                <option value="sedang" {{ old('urgency') == 'sedang' ? 'selected' : '' }}>Sedang</option>
+                                <option value="tinggi" {{ old('urgency') == 'tinggi' ? 'selected' : '' }}>Tinggi</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-4 top-6 flex items-center pointer-events-none"><svg
+                                    class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M19 9l-7 7-7-7" />
+                                </svg></div>
+                            @error('urgency')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="relative">
-                        <label for="size" class="block text-sm font-medium text-gray-300 mb-1">Estimasi Ukuran</label>
-                        <select name="size" id="size" required
-                            class="w-full px-4 py-3 pr-10 rounded-xl bg-[#1e293b] border border-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 @error('size') border-red-500 @enderror"
-                            aria-label="Pilih Estimasi Ukuran">
-                            <option value="">Pilih Estimasi Ukuran</option>
-                            <option value="kecil" {{ old('size') == 'kecil' ? 'selected' : '' }}>Kecil (<1m³)< /option>
-                            <option value="sedang" {{ old('size') == 'sedang' ? 'selected' : '' }}>Sedang (1–5m³)</option>
-                            <option value="besar" {{ old('size') == 'besar' ? 'selected' : '' }}>Besar (>5m³)</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-4 top-6 flex items-center pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-                        @error('size')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="relative">
-                        <label for="urgency" class="block text-sm font-medium text-gray-300 mb-1">Urgensi</label>
-                        <select name="urgency" id="urgency" required
-                            class="w-full px-4 py-3 pr-10 rounded-xl bg-[#1e293b] border border-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 @error('urgency') border-red-500 @enderror"
-                            aria-label="Pilih Urgensi">
-                            <option value="">Pilih Urgensi</option>
-                            <option value="rendah" {{ old('urgency') == 'rendah' ? 'selected' : '' }}>Rendah</option>
-                            <option value="sedang" {{ old('urgency') == 'sedang' ? 'selected' : '' }}>Sedang</option>
-                            <option value="tinggi" {{ old('urgency') == 'tinggi' ? 'selected' : '' }}>Tinggi</option>
-                            <option value="kritis" {{ old('urgency') == 'kritis' ? 'selected' : '' }}>Butuh Penanganan
-                                Cepat</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-4 top-6 flex items-center pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-                        @error('urgency')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
+                    {{-- Input Deskripsi dan Foto (Tidak berubah signifikan) --}}
                     <div>
-                        <label for="description" class="block text-sm font-medium text-gray-300 mb-1">Deskripsi
+                        <label for="description" class="block text-sm font-medium text-gray-300 mb-1">Deskripsi Tambahan
                             (Opsional)</label>
-                        <textarea name="description" id="description" rows="4" placeholder="Deskripsi (opsional)"
+                        <textarea name="description" id="description" rows="3"
+                            placeholder="Deskripsi tambahan mengenai tumpukan sampah..."
                             class="w-full px-4 py-3 rounded-xl bg-[#1e293b] border border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 @error('description') border-red-500 @enderror"
                             aria-label="Deskripsi">{{ old('description') }}</textarea>
                         @error('description')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-
                     <div>
-                        <label for="photos" class="block text-sm font-medium text-gray-300 mb-1">Foto Sampah
-                            (Opsional)</label>
+                        <label for="photos" class="block text-sm font-medium text-gray-300 mb-1">Unggah Foto (Opsional,
+                            maks 3 foto)</label>
                         <input type="file" name="photos[]" id="photos" multiple accept="image/*"
-                            class="w-full px-4 py-3 rounded-xl bg-[#1e293b] border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 @error('photos.*') border-red-500 @enderror"
+                            class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('photos.*') border-red-500 @enderror"
                             aria-label="Upload Foto Sampah">
                         @error('photos.*')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        @error('photos')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -195,7 +215,8 @@
                         <input type="checkbox" name="terms" id="terms" required
                             class="w-5 h-5 text-blue-500 bg-gray-900 border-gray-700 rounded focus:ring-blue-500 @error('terms') border-red-500 @enderror"
                             {{ old('terms') ? 'checked' : '' }} aria-label="Setuju dengan syarat">
-                        <label for="terms" class="ml-3 text-sm text-gray-300">Data yang saya berikan valid *</label>
+                        <label for="terms" class="ml-3 text-sm text-gray-300">Saya menyatakan bahwa data yang saya
+                            berikan adalah benar dan dapat dipertanggungjawabkan *</label>
                         @error('terms')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -211,48 +232,182 @@
         </div>
     </div>
 
+    {{-- Pastikan Leaflet CSS dan JS sudah di-include jika belum ada di layouts.app --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        // Prompt for geolocation when the page loads or when a photo is selected
-        // document.getElementById('photos').addEventListener('change', requestGeolocation); // Komentar ini karena sudah ada tombol
-        window.addEventListener('load', requestGeolocation); // Minta lokasi saat halaman dimuat
+        const latInput = document.getElementById('latitude');
+        const lonInput = document.getElementById('longitude');
+        const locationTextInput = document.getElementById('location_text'); // Ganti id textarea menjadi location_text
+        const provinceInput = document.getElementById('province');
+        const cityInput = document.getElementById('city');
+        const geolocationStatusEl = document.getElementById('geolocation_status');
+        const NOMINATIM_REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse';
+        const NOMINATIM_SEARCH_URL = 'https://nominatim.openstreetmap.org/search';
 
-        // Handle "Gunakan Lokasi Saat Ini" button click
-        document.getElementById('getLocation').addEventListener('click', requestGeolocation);
+        let reportMap;
+        let reportMarker;
 
-        async function requestGeolocation() {
+        function initializeReportMap(initialLat = -2.5489, initialLon = 118.0149, initialZoom = 5) {
+            if (reportMap) return; // Hindari inisialisasi ganda
+
+            reportMap = L.map('reportMap').setView([initialLat, initialLon], initialZoom);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(reportMap);
+
+            reportMarker = L.marker([initialLat, initialLon], {
+                draggable: true
+            }).addTo(reportMap);
+            updateHiddenCoords(initialLat, initialLon); // Update input hidden dengan nilai awal
+
+            reportMarker.on('dragend', function(e) {
+                const position = reportMarker.getLatLng();
+                updateHiddenCoords(position.lat, position.lng);
+                doReverseGeocode(position.lat, position.lng, true); // Update alamat juga
+            });
+
+            reportMap.on('click', function(e) {
+                reportMarker.setLatLng(e.latlng);
+                const position = reportMarker.getLatLng();
+                updateHiddenCoords(position.lat, position.lng);
+                doReverseGeocode(position.lat, position.lng, true); // Update alamat juga
+            });
+        }
+
+        function updateHiddenCoords(lat, lon) {
+            latInput.value = lat.toFixed(6);
+            lonInput.value = lon.toFixed(6);
+        }
+
+        async function doReverseGeocode(lat, lon, updateMapAndView = false) {
+            geolocationStatusEl.textContent = 'Mendapatkan detail alamat...';
+            geolocationStatusEl.className = 'text-yellow-400 text-xs mt-1';
+            try {
+                const response = await fetch(
+                    `${NOMINATIM_REVERSE_URL}?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=id`
+                    );
+                if (!response.ok) throw new Error('Reverse geocoding gagal');
+                const data = await response.json();
+
+                const address = data.display_name || `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
+                locationTextInput.value = address;
+
+                if (data.address) {
+                    provinceInput.value = data.address.state || data.address.province || '';
+                    cityInput.value = data.address.city || data.address.county || data.address.town || data.address
+                        .village || '';
+                } else {
+                    provinceInput.value = '';
+                    cityInput.value = '';
+                }
+                geolocationStatusEl.textContent = 'Detail alamat berhasil didapatkan.';
+                geolocationStatusEl.className = 'text-green-400 text-xs mt-1';
+
+                if (updateMapAndView && reportMap && reportMarker) {
+                    reportMarker.setLatLng([lat, lon]);
+                    reportMap.setView([lat, lon], 16); // Zoom lebih dekat
+                }
+
+            } catch (error) {
+                console.error("Error reverse geocoding:", error);
+                locationTextInput.value = `Koordinat: ${lat.toFixed(5)}, ${lon.toFixed(5)}`; // Fallback
+                provinceInput.value = '';
+                cityInput.value = '';
+                geolocationStatusEl.textContent = 'Detail alamat gagal diambil. Menggunakan koordinat.';
+                geolocationStatusEl.className = 'text-yellow-400 text-xs mt-1';
+            }
+        }
+
+        async function geocodeAddressFromText() {
+            const addressQuery = locationTextInput.value.trim();
+            if (!addressQuery) {
+                geolocationStatusEl.textContent = 'Masukkan alamat untuk dicari.';
+                geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
+                return;
+            }
+            geolocationStatusEl.textContent = `Mencari alamat "${addressQuery}"...`;
+            geolocationStatusEl.className = 'text-yellow-400 text-xs mt-1';
+
+            try {
+                const response = await fetch(
+                    `${NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(addressQuery)}&format=json&limit=1&countrycodes=id&addressdetails=1`
+                    );
+                if (!response.ok) throw new Error('Geocoding gagal');
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    const newLat = parseFloat(data[0].lat);
+                    const newLon = parseFloat(data[0].lon);
+                    updateHiddenCoords(newLat, newLon);
+                    // locationTextInput.value = data[0].display_name; // Biarkan teks asli pengguna atau update dengan display_name
+
+                    if (data[0].address) {
+                        provinceInput.value = data[0].address.state || data[0].address.province || '';
+                        cityInput.value = data[0].address.city || data[0].address.county || data[0].address.town ||
+                            data[0].address.village || '';
+                    } else {
+                        provinceInput.value = '';
+                        cityInput.value = '';
+                    }
+
+                    geolocationStatusEl.textContent = 'Alamat ditemukan: ' + data[0].display_name.substring(0, 50) +
+                        '...';
+                    geolocationStatusEl.className = 'text-green-400 text-xs mt-1';
+
+                    if (reportMap && reportMarker) {
+                        reportMarker.setLatLng([newLat, newLon]);
+                        reportMap.setView([newLat, newLon], 16); // Zoom ke lokasi
+                    } else {
+                        initializeReportMap(newLat, newLon, 16); // Inisialisasi peta jika belum ada
+                    }
+
+                } else {
+                    geolocationStatusEl.textContent = `Alamat "${addressQuery}" tidak ditemukan.`;
+                    geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
+                    latInput.value = '';
+                    lonInput.value = '';
+                    provinceInput.value = '';
+                    cityInput.value = ''; // Kosongkan jika tidak ketemu
+                }
+            } catch (error) {
+                console.error("Error geocoding address text:", error);
+                geolocationStatusEl.textContent = 'Gagal mencari alamat. Coba lagi atau gunakan GPS.';
+                geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
+                latInput.value = '';
+                lonInput.value = '';
+                provinceInput.value = '';
+                cityInput.value = '';
+            }
+        }
+
+
+        document.getElementById('getLocationButton').addEventListener('click', async function requestGPSLocation() {
             if (navigator.geolocation) {
+                geolocationStatusEl.textContent = 'Mendapatkan lokasi GPS Anda...';
+                geolocationStatusEl.className = 'text-yellow-400 text-xs mt-1';
                 try {
                     const position = await new Promise((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, {
                             enableHighAccuracy: true,
-                            timeout: 5000,
+                            timeout: 10000,
                             maximumAge: 0
                         });
                     });
-
                     const latitude = position.coords.latitude;
                     const longitude = position.coords.longitude;
-                    document.getElementById('latitude').value = latitude;
-                    document.getElementById('longitude').value = longitude;
+                    updateHiddenCoords(latitude, longitude);
+                    await doReverseGeocode(latitude, longitude,
+                    true); // Lakukan reverse geocode dan update peta
 
-                    // Reverse geocode to get a human-readable address using OpenStreetMap Nominatim
-                    try {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
-                        );
-                        const data = await response.json();
-                        const address = data.display_name || `Lat: ${latitude}, Lon: ${longitude}`;
-                        document.getElementById('location').value = address;
-                        alert('Lokasi berhasil didapatkan: ' + address);
-                    } catch (error) {
-                        console.error('Error reverse geocoding:', error);
-                        document.getElementById('location').value = `Lat: ${latitude}, Lon: ${longitude}`;
-                        alert(
-                            'Lokasi berhasil didapatkan, tetapi alamat tidak dapat diambil dari Nominatim. Menggunakan koordinat.'
-                        );
+                    if (!
+                        reportMap) { // Inisialisasi peta jika belum ada (misalnya, setelah gagal geocode alamat)
+                        initializeReportMap(latitude, longitude, 16);
                     }
+
                 } catch (error) {
-                    let errorMessage = 'Gagal mendapatkan lokasi. ';
+                    let errorMessage = 'Gagal mendapatkan lokasi GPS. ';
                     switch (error.code) {
                         case error.PERMISSION_DENIED:
                             errorMessage += "Anda menolak permintaan Geolocation.";
@@ -261,25 +416,73 @@
                             errorMessage += "Informasi lokasi tidak tersedia.";
                             break;
                         case error.TIMEOUT:
-                            errorMessage += "Permintaan untuk mendapatkan lokasi melebihi batas waktu.";
+                            errorMessage += "Permintaan lokasi melebihi batas waktu.";
                             break;
-                        case error.UNKNOWN_ERROR:
+                        default:
                             errorMessage += "Terjadi kesalahan tidak diketahui.";
                             break;
                     }
-                    alert(errorMessage + ' Silakan masukkan alamat secara manual.');
+                    geolocationStatusEl.textContent = errorMessage +
+                        ' Anda bisa memasukkan alamat manual dan klik "Cari Alamat di Peta".';
+                    geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
                     console.error('Geolocation error:', error);
+                    if (!reportMap) initializeReportMap(); // Tetap inisialisasi peta dengan default view
                 }
             } else {
-                alert('Geolocation tidak didukung oleh browser Anda. Silakan masukkan alamat secara manual.');
+                geolocationStatusEl.textContent =
+                    'Geolocation tidak didukung oleh browser Anda. Silakan masukkan alamat secara manual.';
+                geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
+                if (!reportMap) initializeReportMap(); // Tetap inisialisasi peta
             }
-        }
+        });
 
-        // Disable submit button during form submission
+        document.getElementById('geocodeAddressButton').addEventListener('click', geocodeAddressFromText);
+
         document.getElementById('reportForm').addEventListener('submit', function(event) {
+            const latVal = latInput.value;
+            const lonVal = lonInput.value;
+
+            if (!latVal || !lonVal || isNaN(parseFloat(latVal)) || isNaN(parseFloat(lonVal))) {
+                event.preventDefault();
+                geolocationStatusEl.textContent =
+                    'KOORDINAT LOKASI WAJIB ADA. Gunakan GPS atau "Cari Alamat di Peta" untuk mendapatkan koordinat.';
+                geolocationStatusEl.className = 'text-red-500 font-bold text-sm mt-1';
+
+                // Scroll ke pesan error agar terlihat
+                geolocationStatusEl.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+
+                // Re-enable tombol submit jika validasi gagal
+                const submitButton = document.getElementById('submitButton');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Kirim Laporan';
+                return false;
+            }
+            // Jika valid, lanjutkan dengan disable tombol submit
             const submitButton = document.getElementById('submitButton');
             submitButton.disabled = true;
             submitButton.textContent = 'Mengirim Laporan...';
+        });
+
+        // Inisialisasi peta saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeReportMap();
+            // Jika ada old input untuk latitude dan longitude (misalnya setelah gagal validasi backend),
+            // coba set marker ke posisi tersebut.
+            const oldLat = parseFloat(latInput.value);
+            const oldLon = parseFloat(lonInput.value);
+            if (!isNaN(oldLat) && !isNaN(oldLon) && reportMap && reportMarker) {
+                const oldPosition = L.latLng(oldLat, oldLon);
+                reportMarker.setLatLng(oldPosition);
+                reportMap.setView(oldPosition, 16);
+                // Jika location text kosong dan ada old coords, coba reverse geocode
+                if (!locationTextInput.value && oldLat !== -2.5489 && oldLon !==
+                    118.0149) { // Hindari reverse geocode default coords
+                    doReverseGeocode(oldLat, oldLon);
+                }
+            }
         });
     </script>
 @endsection
