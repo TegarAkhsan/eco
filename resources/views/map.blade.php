@@ -112,8 +112,13 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+    {{-- Leaflet Routing Machine --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
     <style>
-        /* Style notifikasi dan Leaflet sama seperti sebelumnya */
+        /* Style notifikasi dan Leaflet (sebagian besar sama) */
         .app-notification {
             padding: 12px 16px;
             border-radius: 8px;
@@ -241,6 +246,7 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             transition: all 0.2s ease;
+            z-index: 1000;
         }
 
         .custom-reset-button:hover {
@@ -366,10 +372,41 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Styling untuk Leaflet Routing Machine */
+        .leaflet-routing-container {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            /* Background sedikit lebih solid */
+            border-radius: 8px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Ganti warna teks di panel rute menjadi hitam */
+        .leaflet-routing-container,
+        .leaflet-routing-container .leaflet-routing-summary span,
+        .leaflet-routing-container .leaflet-routing-instruction,
+        .leaflet-routing-container .leaflet-routing-instruction span,
+        .leaflet-routing-container .leaflet-routing-distance,
+        .leaflet-routing-container .leaflet-routing-time,
+        .leaflet-routing-container .leaflet-routing-alt h2,
+        .leaflet-routing-container .leaflet-routing-alt td,
+        .leaflet-routing-container table td {
+            color: black !important;
+            /* Warna teks hitam */
+        }
+
+        .leaflet-routing-icon {
+            /* Pastikan ikon juga terlihat jika warnanya default putih */
+            filter: invert(10%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%);
+            /* Membuat ikon jadi hitam */
+        }
     </style>
 
     <script>
         // --- Konstanta Aplikasi & Variabel Global & Elemen UI ---
+        // ... (sebagian besar variabel sama)
         const API_REPORTS_URL = '/api/reports';
         const DEFAULT_MAP_CENTER = [-2.5489, 118.0149];
         const DEFAULT_MAP_ZOOM = 5;
@@ -397,6 +434,8 @@
             cityCircleLayerGroup, info, legend;
         let currentLocationMapMarker = null;
         let targetLocationMapMarker = null;
+        let routeLine = null;
+        let routingControl = null;
         const searchButtonEl = document.getElementById('searchButton');
         const searchButtonIconEl = document.getElementById('searchButtonIcon');
         const searchButtonTextEl = document.getElementById('searchButtonText');
@@ -409,6 +448,7 @@
         const typeInputEl = document.getElementById('type');
         const radiusInputEl = document.getElementById('radius');
 
+        // ... (fungsi showAppNotification, updateInputLocationMarker, geocodeLocation, tryAutoCalculateRadius, handleFetchCurrentLocation tetap sama)
         function showAppNotification(message, type = 'info', duration = 5000) {
             if (!notificationAreaEl) return;
             const notifElement = document.createElement('div');
@@ -482,7 +522,7 @@
                     locationStorageObject.displayName =
                         `Koordinat: ${latCandidate.toFixed(5)}, ${lonCandidate.toFixed(5)}`;
                     if (inputElement) inputElement.value = locationStorageObject
-                    .displayName; // Atau biarkan input tetap "lat,lon"
+                        .displayName;
                     showAppNotification(`Menggunakan koordinat langsung: ${locationStorageObject.displayName}`,
                         'success');
                     if (isForCurrentLocationMarker) {
@@ -504,19 +544,19 @@
                     showAppNotification(`Format koordinat "${query}" tidak valid.`, 'warning');
                 }
             }
-            showAppNotification(`Mencari alamat "${query}"...`, 'info', 3000); // Durasi notifikasi diperpanjang
+            showAppNotification(`Mencari alamat "${query}"...`, 'info', 3000);
             try {
                 const response = await fetch(
                     `${NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=id&addressdetails=1`
-                    ); // Tambah addressdetails
+                );
                 if (!response.ok) throw new Error('Respon Geocoding tidak OK');
                 const data = await response.json();
                 if (data && data.length > 0) {
                     locationStorageObject.lat = parseFloat(data[0].lat);
                     locationStorageObject.lon = parseFloat(data[0].lon);
-                    locationStorageObject.displayName = data[0].display_name; // display_name dari Nominatim
+                    locationStorageObject.displayName = data[0].display_name;
                     if (inputElement) inputElement.value = data[0]
-                    .display_name; // Update input dengan nama yang lebih lengkap
+                        .display_name;
                     showAppNotification(`Lokasi "${data[0].display_name}" ditemukan.`, 'success');
                     if (isForCurrentLocationMarker) {
                         currentLocationMapMarker = updateInputLocationMarker(locationStorageObject,
@@ -541,7 +581,7 @@
                     locationStorageObject.lon = null;
                     locationStorageObject.displayName = query;
                     if (isForCurrentLocationMarker && currentLocationMapMarker && map.hasLayer(
-                        currentLocationMapMarker)) {
+                            currentLocationMapMarker)) {
                         map.removeLayer(currentLocationMapMarker);
                         currentLocationMapMarker = null;
                     } else if (!isForCurrentLocationMarker && targetLocationMapMarker && map.hasLayer(
@@ -597,7 +637,7 @@
                 try {
                     const response = await fetch(
                         `${NOMINATIM_REVERSE_URL}?format=json&lat=${currentLocationCoords.lat}&lon=${currentLocationCoords.lon}&accept-language=id&addressdetails=1`
-                        );
+                    );
                     if (!response.ok) throw new Error('Gagal reverse geocoding');
                     const data = await response.json();
                     currentLocationCoords.displayName = data && data.display_name ? data.display_name :
@@ -664,6 +704,7 @@
         }
 
         // --- Fungsi Inti Peta (fetchWastePoints, getMarkerIcon, updateAreaStatistics, addMarkers, calculateDistance, initializeMap) ---
+        // ... (fetchWastePoints, getMarkerIcon, updateAreaStatistics, addMarkers, calculateDistance, initializeMap sebagian besar sama)
         async function fetchWastePoints() {
             try {
                 const response = await fetch(API_REPORTS_URL);
@@ -712,6 +753,7 @@
         }
 
         function getMarkerIcon() {
+            /* ... sama ... */
             return L.icon({
                 iconUrl: MARKER_ICON_URL,
                 shadowUrl: MARKER_SHADOW_URL,
@@ -724,6 +766,7 @@
         }
 
         function updateAreaStatistics(wastePoints) {
+            /* ... sama ... */
             const types = ['organik', 'anorganik', 'b3', 'campuran'];
             const reportCounts = types.map(type => ({
                 label: type.charAt(0).toUpperCase() + type.slice(1),
@@ -749,12 +792,12 @@
             });
         }
         async function addMarkers(filteredLocations, userLatLon) {
+            /* ... sama ... */
             markers.clearLayers();
             nearestLocationsListEl.innerHTML = '';
             if (filteredLocations.length === 0) {
                 nearestLocationsListEl.innerHTML =
                     `<li class="text-gray-400 text-center py-4">Tidak ada laporan ditemukan.</li>`;
-                showAppNotification('Tidak ada laporan sampah ditemukan sesuai kriteria pencarian Anda.', 'info');
             }
             const uniqueLocationKeys = new Set();
             filteredLocations.forEach(loc => {
@@ -789,17 +832,25 @@
                     nearestLocationsListEl.appendChild(li);
                 }
             });
-            if (markers.getLayers().length > 0 && map) {
-                map.fitBounds(markers.getBounds(), {
+            let boundsToFit = null;
+            if (markers.getLayers().length > 0) {
+                boundsToFit = markers.getBounds();
+            }
+            if (routeLine && map.hasLayer(routeLine)) {
+                boundsToFit = boundsToFit ? boundsToFit.extend(routeLine.getBounds()) : routeLine.getBounds();
+            }
+            if (boundsToFit && map) {
+                map.fitBounds(boundsToFit, {
                     padding: [50, 50],
-                    maxZoom: 14
+                    maxZoom: 16
                 });
-            } else if (!userLatLon && map) {
+            } else if (!userLatLon && map && !routeLine && !routingControl) {
                 map.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
             }
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
+            /* ... sama ... */
             const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -809,6 +860,7 @@
             return R * c;
         }
         async function initializeMap() {
+            /* ... sama, hanya update atribusi ... */
             map = L.map('map', {
                 center: DEFAULT_MAP_CENTER,
                 zoom: DEFAULT_MAP_ZOOM,
@@ -820,12 +872,12 @@
                 position: 'topleft'
             }).addTo(map);
             osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap',
+                attribution: '© OpenStreetMap contributors & OSRM',
                 maxZoom: MAX_ZOOM
             });
             satelliteLayer = L.tileLayer(
                 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: 'Tiles © Esri',
+                    attribution: 'Tiles © Esri & OSRM',
                     maxZoom: MAX_ZOOM
                 });
             let initialLayer = localStorage.getItem('mapLayer') === 'satellite' ? satelliteLayer : osmLayer;
@@ -929,9 +981,7 @@
                                 currentLocationMapMarker || layer === targetLocationMapMarker) && layer
                             .options.icon && layer.options.icon.options.iconUrl.includes(
                             'marker-icon') && !layer.options.className?.includes('waste-circle-label')
-                            ) {
-                            map.removeLayer(layer);
-                        }
+                            ) {}
                     });
                     provinceGeoJson.features.forEach(feature => {
                         const provinceName = feature.properties.NAME_1;
@@ -1152,6 +1202,7 @@
             });
         }
 
+
         // --- Event Listeners untuk Input Lokasi & Tombol ---
         fetchCurrentLocationButtonEl.addEventListener('click', handleFetchCurrentLocation);
         currentLocationInputEl.addEventListener('change', (event) => geocodeLocation(event.target.value,
@@ -1163,21 +1214,32 @@
             searchButtonIconEl.textContent = '⏳';
             searchButtonTextEl.textContent = 'Mencari...';
             searchButtonEl.disabled = true;
+
+            if (routeLine && map.hasLayer(routeLine)) {
+                map.removeLayer(routeLine);
+                routeLine = null;
+            }
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+
             let searchCenterLatLon = null;
             let searchDisplayName = "data umum";
             const manualTargetQuery = targetLocationInputEl.value.trim();
             const currentLocQuery = currentLocationInputEl.value.trim();
 
+            // ... (logika validasi dan penentuan searchCenterLatLon tetap sama)
             if (targetLocationCoords.lat !== null && targetLocationCoords.lon !== null) {
                 searchCenterLatLon = [targetLocationCoords.lat, targetLocationCoords.lon];
                 searchDisplayName = targetLocationCoords.displayName || manualTargetQuery;
                 showAppNotification(`Pencarian difokuskan pada: "${searchDisplayName}"`, 'info', 3000);
-                if (map) map.setView(searchCenterLatLon, map.getZoom() < 10 ? 10 : map.getZoom());
+                if (map && !(currentLocationCoords.lat && targetLocationCoords.lat)) {
+                    map.setView(searchCenterLatLon, map.getZoom() < 10 ? 10 : map.getZoom());
+                }
             } else if (manualTargetQuery !== "" && (targetLocationCoords.lat === null || targetLocationCoords
                     .lon === null)) {
-                showAppNotification(
-                    `Lokasi Tujuan "${manualTargetQuery}" tidak valid atau belum selesai diproses. Mohon tunggu atau periksa kembali.`,
-                    'error', 6000);
+                showAppNotification(`Lokasi Tujuan "${manualTargetQuery}" tidak valid.`, 'error', 6000);
                 searchButtonIconEl.textContent = '🔍';
                 searchButtonTextEl.textContent = 'Cari';
                 searchButtonEl.disabled = false;
@@ -1190,26 +1252,83 @@
                 if (map) map.setView(searchCenterLatLon, 12);
             } else if (currentLocQuery !== "" && (currentLocationCoords.lat === null || currentLocationCoords
                     .lon === null)) {
-                showAppNotification(
-                    `Lokasi Anda Saat Ini "${currentLocQuery}" tidak valid atau belum selesai diproses. Mohon tunggu atau periksa kembali.`,
-                    'error', 6000);
+                showAppNotification(`Lokasi Anda Saat Ini "${currentLocQuery}" tidak valid.`, 'error', 6000);
                 searchButtonIconEl.textContent = '🔍';
                 searchButtonTextEl.textContent = 'Cari';
                 searchButtonEl.disabled = false;
                 return;
             } else {
-                showAppNotification(
-                    'Tidak ada lokasi valid untuk pusat pencarian. Menampilkan data berdasarkan jenis sampah (jika dipilih).',
-                    'warning');
+                showAppNotification('Tidak ada lokasi valid untuk pusat pencarian.', 'warning');
+            }
+
+
+            if (currentLocationCoords.lat !== null && currentLocationCoords.lon !== null &&
+                targetLocationCoords.lat !== null && targetLocationCoords.lon !== null) {
+
+                const latlngsStraight = [
+                    [currentLocationCoords.lat, currentLocationCoords.lon],
+                    [targetLocationCoords.lat, targetLocationCoords.lon]
+                ];
+                routeLine = L.polyline(latlngsStraight, {
+                    color: 'red', // UBAH WARNA GARIS LURUS MENJADI MERAH
+                    weight: 3,
+                    opacity: 0.7,
+                    dashArray: '5, 5'
+                }).addTo(map);
+                showAppNotification('Garis lurus antara lokasi Anda dan tujuan ditampilkan.', 'info', 3000);
+
+                try {
+                    routingControl = L.Routing.control({
+                        waypoints: [
+                            L.latLng(currentLocationCoords.lat, currentLocationCoords.lon),
+                            L.latLng(targetLocationCoords.lat, targetLocationCoords.lon)
+                        ],
+                        router: L.Routing.osrmv1({
+                            serviceUrl: 'https://router.project-osrm.org/route/v1'
+                        }),
+                        lineOptions: {
+                            styles: [{
+                                color: '#06b6d4',
+                                opacity: 0.8,
+                                weight: 5
+                            }]
+                        },
+                        show: true,
+                        addWaypoints: false,
+                        draggableWaypoints: false,
+                        fitSelectedRoutes: 'smart',
+                        createMarker: function() {
+                            return null;
+                        }
+                    }).on('routesfound', function(e) {
+                        const routes = e.routes;
+                        if (routes.length > 0) {
+                            const summary = routes[0].summary;
+                            showAppNotification(
+                                `Rute jalan ditemukan: ${ (summary.totalDistance / 1000).toFixed(1)} km, sekitar ${(summary.totalTime / 60).toFixed(0)} menit.`,
+                                'success');
+                        }
+                    }).on('routingerror', function(e) {
+                        console.error("Routing error:", e.error);
+                        showAppNotification(
+                            `Gagal mendapatkan rute jalan: ${e.error.message || 'Error OSRM.'}`,
+                            'error');
+                        if (routingControl) {
+                            map.removeControl(routingControl);
+                            routingControl = null;
+                        }
+                    }).addTo(map);
+                } catch (error) {
+                    console.error("Error membuat routing control:", error);
+                    showAppNotification("Error membuat rute jalan.", "error");
+                }
             }
 
             const typeFilter = typeInputEl.value;
             const radiusToSearch = parseFloat(radiusInputEl.value);
 
             if (!searchCenterLatLon && (currentLocQuery !== "" || manualTargetQuery !== "")) {
-                showAppNotification(
-                    `Input lokasi ada tapi tidak dapat diproses menjadi koordinat. Periksa kembali input lokasi Anda.`,
-                    'error', 5000);
+                showAppNotification(`Input lokasi ada tapi tidak dapat diproses.`, 'error', 5000);
                 searchButtonIconEl.textContent = '🔍';
                 searchButtonTextEl.textContent = 'Cari';
                 searchButtonEl.disabled = false;
@@ -1226,25 +1345,34 @@
                 }
 
                 if (searchCenterLatLon && radiusToSearch > 0 && !isNaN(radiusToSearch)) {
-                    filteredLocations = filteredLocations.filter(loc => {
-                        if (loc.coords && loc.coords.length === 2 && !isNaN(loc.coords[0]) && !isNaN(loc
-                                .coords[1])) {
-                            const distance = calculateDistance(searchCenterLatLon[0],
-                                searchCenterLatLon[1], loc.coords[0], loc.coords[1]);
-                            return distance <= radiusToSearch;
-                        }
-                        return false;
-                    });
+                    const centerForRadiusFilter = (currentLocationCoords.lat && targetLocationCoords.lat) ? [
+                            currentLocationCoords.lat, currentLocationCoords.lon
+                        ] :
+                        searchCenterLatLon;
+                    if (centerForRadiusFilter) {
+                        filteredLocations = filteredLocations.filter(loc => {
+                            if (loc.coords && loc.coords.length === 2 && !isNaN(loc.coords[0]) && !
+                                isNaN(loc.coords[1])) {
+                                const distance = calculateDistance(centerForRadiusFilter[0],
+                                    centerForRadiusFilter[1], loc.coords[0], loc.coords[1]);
+                                return distance <= radiusToSearch;
+                            }
+                            return false;
+                        });
+                    }
                 } else if (searchCenterLatLon && (isNaN(radiusToSearch) || radiusToSearch <= 0)) {
-                    showAppNotification(
-                        'Nilai radius tidak valid atau nol. Filter radius dilewati untuk pencarian berbasis lokasi.',
-                        'warning');
+                    showAppNotification('Radius tidak valid. Filter radius dilewati.', 'warning');
                 }
-                addMarkers(filteredLocations, searchCenterLatLon);
+
+                const referencePointForDistanceList = currentLocationCoords.lat ? [currentLocationCoords.lat,
+                    currentLocationCoords.lon
+                ] : searchCenterLatLon;
+                addMarkers(filteredLocations, referencePointForDistanceList);
                 updateAreaStatistics(filteredLocations);
+
             } catch (error) {
-                console.error('Error pada proses pencarian:', error);
-                showAppNotification('Gagal memproses pencarian.', 'error');
+                console.error('Error pada proses pencarian laporan:', error);
+                showAppNotification('Gagal memproses pencarian laporan.', 'error');
                 const {
                     reports
                 } = await fetchWastePoints();
@@ -1263,6 +1391,15 @@
                 map.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
                 if (map.closePopup) map.closePopup();
             }
+            if (routeLine && map.hasLayer(routeLine)) {
+                map.removeLayer(routeLine);
+                routeLine = null;
+            }
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+
             const {
                 reports
             } = await fetchWastePoints();

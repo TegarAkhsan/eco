@@ -29,7 +29,6 @@
 
             <div class="grid md:grid-cols-2 gap-8">
                 <div class="bg-blue-700/90 text-white p-6 rounded-lg space-y-6">
-                    {{-- Contact Information (Tidak berubah) --}}
                     <h2 class="text-xl font-semibold">Contact Information</h2>
                     <p class="text-sm text-gray-200">Empowering communities with innovative tools for waste management and
                         environmental protection</p>
@@ -51,7 +50,7 @@
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path
-                                d="M12 2C8.13 2 5 5.13 5 9c0 4.25 5.4 11.74 6.17 12.74.39.5 1.28.5 1.67 0C13.6 20.74 19 13.25 19 9c0-3.87-3.13-7-7-7z" />
+                                d="M12 2C8.13 lw 2 5 5.13 5 9c0 4.25 5.4 11.74 6.17 12.74.39.5 1.28.5 1.67 0C13.6 20.74 19 13.25 19 9c0-3.87-3.13-7-7-7z" />
                         </svg>
                         <span>Indonesia, Surabaya</span>
                     </div>
@@ -60,7 +59,6 @@
                 <form action="{{ route('report.submit') }}" method="POST" enctype="multipart/form-data"
                     class="space-y-5 text-white relative" id="reportForm">
                     @csrf
-                    {{-- Input Nama dan Email (Tidak berubah signifikan) --}}
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Nama
                             Laporan/Pelapor</label>
@@ -83,7 +81,6 @@
                         @enderror
                     </div>
 
-                    {{-- Input Lokasi --}}
                     <div>
                         <label for="location_text" class="block text-sm font-medium text-gray-300 mb-1">Alamat/Detail Lokasi
                             Sampah</label>
@@ -107,20 +104,17 @@
                         @enderror
                     </div>
 
-                    {{-- Peta Kecil untuk Pemilihan/Konfirmasi Lokasi --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-1">Pinpoint di Peta (Klik atau Geser
                             Marker):</label>
                         <div id="reportMap" style="height: 300px; border-radius: 10px;" class="mb-2"></div>
                     </div>
 
-
                     <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
                     <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
                     <input type="hidden" name="province" id="province" value="{{ old('province') }}">
                     <input type="hidden" name="city" id="city" value="{{ old('city') }}">
 
-                    {{-- Input Jenis, Ukuran, Urgensi (Tidak berubah signifikan) --}}
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="relative">
                             <label for="type" class="block text-sm font-medium text-gray-300 mb-1">Jenis Sampah</label>
@@ -185,7 +179,6 @@
                         </div>
                     </div>
 
-                    {{-- Input Deskripsi dan Foto (Tidak berubah signifikan) --}}
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-300 mb-1">Deskripsi Tambahan
                             (Opsional)</label>
@@ -213,7 +206,7 @@
 
                     <div class="flex items-center">
                         <input type="checkbox" name="terms" id="terms" required
-                            class="w-5 h-5 text-blue-500 bg-gray-900 border-gray-700 rounded focus:ring-blue-500 @error('terms') border-red-500 @enderror"
+                            class="w-5 h-5 text-blue-500 bg-gray-900 border-gray-700 rounded focus:ring-blue-500 @error('terms') border-red-500 @error"
                             {{ old('terms') ? 'checked' : '' }} aria-label="Setuju dengan syarat">
                         <label for="terms" class="ml-3 text-sm text-gray-300">Saya menyatakan bahwa data yang saya
                             berikan adalah benar dan dapat dipertanggungjawabkan *</label>
@@ -223,23 +216,22 @@
                     </div>
 
                     <button type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-full transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                        id="submitButton">
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-full transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            id="submitButton">
                         Kirim Laporan
-                    </button>
+                        </button>
                 </form>
             </div>
         </div>
     </div>
 
-    {{-- Pastikan Leaflet CSS dan JS sudah di-include jika belum ada di layouts.app --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
         const latInput = document.getElementById('latitude');
         const lonInput = document.getElementById('longitude');
-        const locationTextInput = document.getElementById('location_text'); // Ganti id textarea menjadi location_text
+        const locationTextInput = document.getElementById('location_text');
         const provinceInput = document.getElementById('province');
         const cityInput = document.getElementById('city');
         const geolocationStatusEl = document.getElementById('geolocation_status');
@@ -250,7 +242,7 @@
         let reportMarker;
 
         function initializeReportMap(initialLat = -2.5489, initialLon = 118.0149, initialZoom = 5) {
-            if (reportMap) return; // Hindari inisialisasi ganda
+            if (reportMap) return;
 
             reportMap = L.map('reportMap').setView([initialLat, initialLon], initialZoom);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -260,19 +252,19 @@
             reportMarker = L.marker([initialLat, initialLon], {
                 draggable: true
             }).addTo(reportMap);
-            updateHiddenCoords(initialLat, initialLon); // Update input hidden dengan nilai awal
+            updateHiddenCoords(initialLat, initialLon);
 
             reportMarker.on('dragend', function(e) {
                 const position = reportMarker.getLatLng();
                 updateHiddenCoords(position.lat, position.lng);
-                doReverseGeocode(position.lat, position.lng, true); // Update alamat juga
+                doReverseGeocode(position.lat, position.lng, true);
             });
 
             reportMap.on('click', function(e) {
                 reportMarker.setLatLng(e.latlng);
                 const position = reportMarker.getLatLng();
                 updateHiddenCoords(position.lat, position.lng);
-                doReverseGeocode(position.lat, position.lng, true); // Update alamat juga
+                doReverseGeocode(position.lat, position.lng, true);
             });
         }
 
@@ -287,7 +279,7 @@
             try {
                 const response = await fetch(
                     `${NOMINATIM_REVERSE_URL}?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=id`
-                    );
+                );
                 if (!response.ok) throw new Error('Reverse geocoding gagal');
                 const data = await response.json();
 
@@ -307,12 +299,12 @@
 
                 if (updateMapAndView && reportMap && reportMarker) {
                     reportMarker.setLatLng([lat, lon]);
-                    reportMap.setView([lat, lon], 16); // Zoom lebih dekat
+                    reportMap.setView([lat, lon], 16);
                 }
 
             } catch (error) {
                 console.error("Error reverse geocoding:", error);
-                locationTextInput.value = `Koordinat: ${lat.toFixed(5)}, ${lon.toFixed(5)}`; // Fallback
+                locationTextInput.value = `Koordinat: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
                 provinceInput.value = '';
                 cityInput.value = '';
                 geolocationStatusEl.textContent = 'Detail alamat gagal diambil. Menggunakan koordinat.';
@@ -333,107 +325,75 @@
             try {
                 const response = await fetch(
                     `${NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(addressQuery)}&format=json&limit=1&countrycodes=id&addressdetails=1`
-                    );
+                );
                 if (!response.ok) throw new Error('Geocoding gagal');
                 const data = await response.json();
 
                 if (data && data.length > 0) {
-                    const newLat = parseFloat(data[0].lat);
-                    const newLon = parseFloat(data[0].lon);
-                    updateHiddenCoords(newLat, newLon);
-                    // locationTextInput.value = data[0].display_name; // Biarkan teks asli pengguna atau update dengan display_name
-
-                    if (data[0].address) {
-                        provinceInput.value = data[0].address.state || data[0].address.province || '';
-                        cityInput.value = data[0].address.city || data[0].address.county || data[0].address.town ||
-                            data[0].address.village || '';
-                    } else {
-                        provinceInput.value = '';
-                        cityInput.value = '';
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    updateHiddenCoords(lat, lon);
+                    doReverseGeocode(lat, lon, true);
+                    if (!reportMap) {
+                        initializeReportMap(lat, lon, 16);
                     }
-
-                    geolocationStatusEl.textContent = 'Alamat ditemukan: ' + data[0].display_name.substring(0, 50) +
-                        '...';
-                    geolocationStatusEl.className = 'text-green-400 text-xs mt-1';
-
-                    if (reportMap && reportMarker) {
-                        reportMarker.setLatLng([newLat, newLon]);
-                        reportMap.setView([newLat, newLon], 16); // Zoom ke lokasi
-                    } else {
-                        initializeReportMap(newLat, newLon, 16); // Inisialisasi peta jika belum ada
-                    }
-
                 } else {
-                    geolocationStatusEl.textContent = `Alamat "${addressQuery}" tidak ditemukan.`;
-                    geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
-                    latInput.value = '';
-                    lonInput.value = '';
-                    provinceInput.value = '';
-                    cityInput.value = ''; // Kosongkan jika tidak ketemu
+                    throw new Error('Alamat tidak ditemukan');
                 }
             } catch (error) {
-                console.error("Error geocoding address text:", error);
-                geolocationStatusEl.textContent = 'Gagal mencari alamat. Coba lagi atau gunakan GPS.';
+                console.error("Error geocoding:", error);
+                geolocationStatusEl.textContent = 'Alamat tidak ditemukan. Coba lagi atau gunakan GPS.';
                 geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
-                latInput.value = '';
-                lonInput.value = '';
-                provinceInput.value = '';
-                cityInput.value = '';
             }
         }
 
-
-        document.getElementById('getLocationButton').addEventListener('click', async function requestGPSLocation() {
+        function getCurrentPosition(successCallback, errorCallback, options) {
             if (navigator.geolocation) {
-                geolocationStatusEl.textContent = 'Mendapatkan lokasi GPS Anda...';
-                geolocationStatusEl.className = 'text-yellow-400 text-xs mt-1';
-                try {
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                            maximumAge: 0
-                        });
-                    });
-                    const latitude = position.coords.latitude;
-                    const longitude = position.coords.longitude;
-                    updateHiddenCoords(latitude, longitude);
-                    await doReverseGeocode(latitude, longitude,
-                    true); // Lakukan reverse geocode dan update peta
-
-                    if (!
-                        reportMap) { // Inisialisasi peta jika belum ada (misalnya, setelah gagal geocode alamat)
-                        initializeReportMap(latitude, longitude, 16);
-                    }
-
-                } catch (error) {
-                    let errorMessage = 'Gagal mendapatkan lokasi GPS. ';
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage += "Anda menolak permintaan Geolocation.";
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage += "Informasi lokasi tidak tersedia.";
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage += "Permintaan lokasi melebihi batas waktu.";
-                            break;
-                        default:
-                            errorMessage += "Terjadi kesalahan tidak diketahui.";
-                            break;
-                    }
-                    geolocationStatusEl.textContent = errorMessage +
-                        ' Anda bisa memasukkan alamat manual dan klik "Cari Alamat di Peta".';
-                    geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
-                    console.error('Geolocation error:', error);
-                    if (!reportMap) initializeReportMap(); // Tetap inisialisasi peta dengan default view
-                }
+                navigator.geolocation.getCurrentPosition(successCallback, errorCallback, options);
             } else {
-                geolocationStatusEl.textContent =
-                    'Geolocation tidak didukung oleh browser Anda. Silakan masukkan alamat secara manual.';
-                geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
-                if (!reportMap) initializeReportMap(); // Tetap inisialisasi peta
+                errorCallback(new Error("Geolocation is not supported by this browser."));
             }
+        }
+
+        function successCallback(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            updateHiddenCoords(latitude, longitude);
+            doReverseGeocode(latitude, longitude, true);
+            if (!reportMap) {
+                initializeReportMap(latitude, longitude, 16);
+            }
+        }
+
+        function errorCallback(error) {
+            let errorMessage = 'Gagal mendapatkan lokasi GPS. ';
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage += "Anda menolak permintaan Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage += "Informasi lokasi tidak tersedia.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage += "Permintaan lokasi melebihi batas waktu.";
+                    break;
+                default:
+                    errorMessage += "Terjadi kesalahan tidak diketahui.";
+                    break;
+            }
+            geolocationStatusEl.textContent = errorMessage +
+                ' Anda bisa memasukkan alamat manual dan klik "Cari Alamat di Peta".';
+            geolocationStatusEl.className = 'text-red-400 text-xs mt-1';
+            console.error('Geolocation error:', error);
+            if (!reportMap) initializeReportMap();
+        }
+
+        document.getElementById('getLocationButton').addEventListener('click', function() {
+            getCurrentPosition(successCallback, errorCallback, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
         });
 
         document.getElementById('geocodeAddressButton').addEventListener('click', geocodeAddressFromText);
@@ -448,38 +408,31 @@
                     'KOORDINAT LOKASI WAJIB ADA. Gunakan GPS atau "Cari Alamat di Peta" untuk mendapatkan koordinat.';
                 geolocationStatusEl.className = 'text-red-500 font-bold text-sm mt-1';
 
-                // Scroll ke pesan error agar terlihat
                 geolocationStatusEl.scrollIntoView({
                     behavior: 'smooth',
                     block: 'center'
                 });
 
-                // Re-enable tombol submit jika validasi gagal
                 const submitButton = document.getElementById('submitButton');
                 submitButton.disabled = false;
                 submitButton.textContent = 'Kirim Laporan';
                 return false;
             }
-            // Jika valid, lanjutkan dengan disable tombol submit
+
             const submitButton = document.getElementById('submitButton');
             submitButton.disabled = true;
             submitButton.textContent = 'Mengirim Laporan...';
         });
 
-        // Inisialisasi peta saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
             initializeReportMap();
-            // Jika ada old input untuk latitude dan longitude (misalnya setelah gagal validasi backend),
-            // coba set marker ke posisi tersebut.
             const oldLat = parseFloat(latInput.value);
             const oldLon = parseFloat(lonInput.value);
             if (!isNaN(oldLat) && !isNaN(oldLon) && reportMap && reportMarker) {
                 const oldPosition = L.latLng(oldLat, oldLon);
                 reportMarker.setLatLng(oldPosition);
                 reportMap.setView(oldPosition, 16);
-                // Jika location text kosong dan ada old coords, coba reverse geocode
-                if (!locationTextInput.value && oldLat !== -2.5489 && oldLon !==
-                    118.0149) { // Hindari reverse geocode default coords
+                if (!locationTextInput.value && oldLat !== -2.5489 && oldLon !== 118.0149) {
                     doReverseGeocode(oldLat, oldLon);
                 }
             }

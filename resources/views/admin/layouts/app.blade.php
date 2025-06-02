@@ -8,12 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-100 font-sans font-Poppins">
 
-    <nav class="bg-white shadow px-6 py-4 flex items-center font-Poppins">
+    <nav class="bg-white shadow px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <img src="/logo.png" alt="EcoTrack Logo" class="h-10">
-            <span class="text-xl font-semibold text-gray-800">EcoTrack</span>
+            <img src="{{ asset('images/EcoTrack_Logo.png') }}" alt="EcoTrack Logo" class="h-10">
         </div>
 
         <div class="flex-grow px-10">
@@ -38,17 +37,20 @@
             </button>
 
             <div class="flex items-center gap-2">
-                <span class="text-gray-700 font-medium">Admin EcoTrack</span>
-                <img src="/admin-profile.jpg" alt="Admin Profile"
-                    class="w-10 h-10 rounded-full border-2 border-green-500 object-cover">
+                <span class="text-gray-700 font-medium">{{ Auth::user()->first_name }}</span>
+                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-blue-500 text-white">
+                    {{ substr(Auth::user()->first_name, 0, 1) }}
+                </div>
             </div>
         </div>
     </nav>
 
-    {{-- Main wrapper for sidebar and content --}}
-    <div class="flex min-h-[calc(100vh-64px)]"> @include('admin.layouts.sidebar')
+    <!-- Main wrapper for sidebar and content -->
+    <div class="flex min-h-[calc(100vh-64px)]">
+        @include('admin.layouts.sidebar')
 
-        <main class="flex-1 p-6 overflow-y-auto"> {{-- `overflow-y-auto` added here for specific content scrolling if needed --}}
+        <main class="flex-1 p-6 overflow-y-auto">
+            <!-- `overflow-y-auto` added here for specific content scrolling if needed -->
             @yield('content')
         </main>
     </div>
@@ -109,16 +111,15 @@
         });
     </script>
 
-    {{-- Script untuk toggling sidebar pada layar kecil (jika masih diperlukan) --}}
+    <!-- Script untuk toggling sidebar pada layar kecil -->
     <script>
         const sidebar = document.getElementById('sidebar');
-        // Pastikan Anda memiliki tombol toggle di navbar atau di main content jika ini untuk mobile
-        // Contoh: const toggleBtn = document.getElementById('sidebarToggle');
-        // if (toggleBtn) {
-        //     toggleBtn.addEventListener('click', () => {
-        //         sidebar.classList.toggle('-translate-x-full');
-        //     });
-        // }
+        const toggleBtn = document.querySelector('.sidebar-toggle'); // Pastikan ada elemen dengan class ini
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+        }
     </script>
 </body>
 

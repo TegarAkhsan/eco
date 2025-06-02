@@ -5,10 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use GuzzleHttp\Client; // Pastikan Guzzle terinstal: composer require guzzlehttp/guzzle
+use GuzzleHttp\Client;
 
 class ReportController extends Controller
 {
+    /**
+     * Display the dashboard with reports.
+     */
+    public function index()
+    {
+        $reports = Report::orderBy('created_at', 'desc')->get();
+        $activities = \App\Models\Activity::orderBy('created_at', 'desc')->take(10)->get(); // Asumsikan Anda memiliki model Activity
+        return view('admin.index', compact('reports', 'activities'));
+    }
     /**
      * Display the report form for web.
      */
@@ -47,25 +56,24 @@ class ReportController extends Controller
         $report->size = $validatedData['size'];
         $report->urgency = $validatedData['urgency'];
         $report->description = $validatedData['description'];
-        $report->user_id = auth()->check() ? auth()->id() : null; // Tambahkan user_id jika ada user login
+        $report->user_id = auth()->check() ? auth()->id() : null;
 
-        // Extract province and city from location using reverse geocoding
+        // Extract province and city from coordinates using reverse geocoding
         $locationData = $this->getLocationDetailsFromCoordinates($validatedData['latitude'], $validatedData['longitude']);
-        $report->province = $locationData['province'] ?? 'UnknownProvince'; // Default menjadi 'UnknownProvince'
-        $report->city = $locationData['city'] ?? 'UnknownCity'; // Default menjadi 'UnknownCity'
+        $report->province = $locationData['province'] ?? 'UnknownProvince';
+        $report->city = $locationData['city'] ?? 'UnknownCity';
 
         $photoPaths = [];
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('reports', 'public'); // Simpan di storage/app/public/reports
-                $photoPaths[] = 'storage/' . $path; // URL relatif dari root public
+                $path = $photo->store('reports', 'public');
+                $photoPaths[] = 'storage/' . $path;
             }
         }
-        $report->photos = json_encode($photoPaths); // Simpan sebagai JSON string
+        $report->photos = json_encode($photoPaths);
 
         $report->save();
 
-        // Check if the request expects a JSON response (typical for API calls)
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json([
                 'message' => 'Laporan berhasil dikirim!',
@@ -79,38 +87,37 @@ class ReportController extends Controller
                     'size' => $report->size,
                     'urgency' => $report->urgency,
                     'description' => $report->description,
-                    'photos' => json_decode($report->photos) ?? [], // Pastikan dekode berhasil
+                    'photos' => json_decode($report->photos) ?? [],
                     'province' => $report->province,
                     'city' => $report->city,
                 ]
-            ], 201); // 201 Created
+            ], 201);
         }
 
-        // Otherwise, redirect for web requests
         return redirect()->route('report')->with('success', 'Laporan berhasil dikirim! Terima kasih atas kontribusi Anda.');
     }
 
     /**
-     * Get all reports for API or map display.
+     * Get all reports for API or polling.
      */
-    public function getReports(Request $request)
+    public function getReports()
     {
         $reports = Report::all()->map(function ($report) {
             $photos = null;
             if (is_string($report->photos)) {
                 $photos = json_decode($report->photos);
             }
-            if (!is_array($photos)) { // Pastikan hasil akhirnya array
+            if (!is_array($photos)) {
                 $photos = [];
             }
 
             return [
                 'id' => $report->id,
                 'name' => $report->name,
-                'coords' => [(float) $report->latitude, (float) $report->longitude], // Pastikan float untuk JS
-                'location' => $report->location, // Address
+                'email' => $report->email,
+                'location' => $report->location,
                 'type' => $report->type,
-                'size' => $report->size, // Capacity
+                'size' => $report->size,
                 'urgency' => $report->urgency,
                 'description' => $report->description,
                 'photos' => $photos,
@@ -119,32 +126,7 @@ class ReportController extends Controller
             ];
         });
 
-        // Aggregate reports by province
-        $provinceReports = [];
-        $cityReports = [];
-
-        foreach ($reports as $report) {
-            $province = $report['province'] ?? 'UnknownProvince';
-            $city = $report['city'] ?? 'UnknownCity';
-
-            // Aggregate by province
-            if (!isset($provinceReports[$province])) {
-                $provinceReports[$province] = 0;
-            }
-            $provinceReports[$province]++;
-
-            // Aggregate by city
-            if (!isset($cityReports[$city])) {
-                $cityReports[$city] = 0;
-            }
-            $cityReports[$city]++;
-        }
-
-        return response()->json([
-            'reports' => $reports,
-            'provinceReports' => $provinceReports,
-            'cityReports' => $cityReports,
-        ]);
+        return response()->json(['reports' => $reports]);
     }
 
     /**
@@ -159,11 +141,11 @@ class ReportController extends Controller
                     'format' => 'json',
                     'lat' => $latitude,
                     'lon' => $longitude,
-                    'zoom' => 10, // Menyesuaikan zoom untuk mendapatkan detail provinsi dan kota
+                    'zoom' => 10,
                     'addressdetails' => 1,
                 ],
                 'headers' => [
-                    'User-Agent' => 'EcoTrackApp/1.0 (your-email@example.com)', // GANTI DENGAN EMAIL ASLI ANDA
+                    'User-Agent' => 'EcoTrackApp/1.0 (your-email@example.com)', // Ganti dengan email Anda
                 ],
             ]);
 
@@ -172,7 +154,6 @@ class ReportController extends Controller
             $detectedProvince = null;
             $detectedCity = null;
 
-            // Extract province
             if (isset($data['address']['state'])) {
                 $detectedProvince = $data['address']['state'];
             } elseif (isset($data['address']['province'])) {
@@ -181,7 +162,6 @@ class ReportController extends Controller
                 $detectedProvince = $data['address']['region'];
             }
 
-            // Extract city (NAME_2 in GeoJSON corresponds to city/district)
             if (isset($data['address']['city'])) {
                 $detectedCity = $data['address']['city'];
             } elseif (isset($data['address']['county'])) {
@@ -190,7 +170,6 @@ class ReportController extends Controller
                 $detectedCity = $data['address']['district'];
             }
 
-            // Mapping untuk konsistensi nama provinsi dengan GeoJSON Anda (tanpa spasi)
             $provinceMapping = [
                 'aceh' => 'Aceh',
                 'sumaterautara' => 'SumateraUtara',
@@ -315,7 +294,6 @@ class ReportController extends Controller
                 $normalizedProvince = str_replace(' ', '', ucwords(strtolower($detectedProvince ?? 'UnknownProvince')));
             }
 
-            // Normalize city name (remove spaces for consistency with GeoJSON)
             $normalizedCity = 'UnknownCity';
             if ($detectedCity) {
                 $normalizedCity = str_replace(' ', '', ucwords(strtolower($detectedCity)));
@@ -333,4 +311,5 @@ class ReportController extends Controller
             ];
         }
     }
+
 }

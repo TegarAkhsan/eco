@@ -16,6 +16,7 @@ class User extends Authenticatable
         'last_name',
         'email',
         'password',
+        'role', // Add role to fillable
     ];
 
     protected $hidden = [
@@ -31,5 +32,9 @@ class User extends Authenticatable
     public function reports()
     {
         return $this->hasMany(Report::class);
+    }
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
     }
 }

@@ -2,20 +2,16 @@
 @section('hideNavbar', true)
 @section('content')
     <div class="w-full h-screen relative bg-[#111827] overflow-hidden">
-        <!-- Back Button SVG -->
         <a href="{{ route('home') }}"
             class="absolute left-4 top-4 flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-white transition duration-300 shadow">
-            <!-- Ikon panah kiri -->
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M15.707 17.707C16.098 17.316 16.098 16.684 15.707 16.293L11.414 12L15.707 7.707C16.098 7.316 16.098 6.684 15.707 6.293C15.316 5.902 14.684 5.902 14.293 6.293L9.293 11.293C8.902 11.684 8.902 12.316 9.293 12.707L14.293 17.707C14.684 18.098 15.316 18.098 15.707 17.707Z"
                     fill="currentColor" />
             </svg>
-            <!-- Teks Back -->
             <span class="text-sm font-medium">Back</span>
         </a>
 
-        <!-- Decorative Ellipses -->
         <div
             class="absolute w-[292px] h-[292px] left-[-145px] top-[-89px] bg-gradient-to-b from-[#3fa8df] to-[#a30c74] rounded-full blur-[100px]">
         </div>
@@ -23,27 +19,23 @@
             class="absolute w-[292px] h-[292px] left-[1220px] top-[874px] bg-gradient-to-b from-[#3fa8df] to-[#a30c74] rounded-full blur-[100px]">
         </div>
 
-        <!-- Side Earth Image -->
         <img class="absolute right-0 opacity-20" style="transform: scaleX(-1); top: -300px;"
             src="{{ asset('images/Earth Side.png') }}" alt="Side Earth">
 
-        <!-- Title and Description Section -->
         <div class="absolute right-0 top-1/2 transform -translate-y-1/2 flex flex-col items-end pr-10 w-[512px]">
             <div class="text-emerald-400 text-base font-semibold leading-none tracking-wide">JOIN ECO TRACK FOR FREE</div>
             <div class="mt-6 text-white text-6xl font-bold leading-[48px] text-right">Help Shape a Cleaner Future</div>
             <div class="mt-6 w-[403px] text-gray-200 text-xl font-normal leading-[18px] text-right">
                 Join thousands of environmental champions making a real difference. Track, reduce, and optimize your carbon
-                footprint with our innovative platform.
+                footprint with our innovative platform. Admins will be redirected to the dashboard.
             </div>
         </div>
 
-        <!-- Login Form -->
         <div
             class="absolute w-[360px] h-[630px] left-[300px] top-[60px] bg-[#1e2538] rounded-2xl shadow-[0px_20px_25px_0px_rgba(0,0,0,0.10),0px_8px_10px_0px_rgba(0,0,0,0.10)]">
             <h2 class="absolute left-[24px] top-[24px] text-white text-xl font-bold font-poppins">Sign In to Your Account
             </h2>
 
-            <!-- Success/Error Messages -->
             @if (session('success'))
                 <div class="text-center text-green-500 text-sm mt-3">
                     {{ session('success') }}
@@ -61,7 +53,6 @@
 
             <form action="{{ route('login') }}" method="POST" class="absolute w-[304px] left-[24px] top-[72px]">
                 @csrf
-                <!-- Email Field -->
                 <div class="mb-[20px]">
                     <label for="email" class="block text-white text-sm font-normal mb-[6px]">Email Address</label>
                     <div class="relative">
@@ -71,13 +62,11 @@
                     </div>
                 </div>
 
-                <!-- Password Field -->
                 <div class="mb-[20px]">
                     <label for="password" class="block text-white text-sm font-normal mb-[6px]">Password</label>
                     <div class="relative">
                         <input type="password" id="password" name="password" required placeholder="Enter your password"
                             class="w-full h-[44px] pl-[40px] pr-4 py-2 bg-[#1e2538] rounded-[8px] outline outline-1 outline-[#2e3a59] text-[#adaebc] text-sm font-normal leading-normal focus:outline-none focus:ring-2 focus:ring-[#2553a1]">
-                        <!-- Eye Icon for Password Visibility -->
                         <button type="button" id="togglePassword" onclick="togglePassword()"
                             class="absolute right-[12px] top-[13px] w-4 h-4 text-gray-400 focus:outline-none">
                             <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -91,19 +80,16 @@
                     </div>
                 </div>
 
-                <!-- Forgot Password Link -->
                 <div class="text-right mb-[16px]">
                     <a href="#" class="text-[#2553a1] text-sm font-normal leading-[14px] hover:underline">Forgot
                         Password?</a>
                 </div>
 
-                <!-- Log In Button -->
                 <button type="submit"
                     class="w-full h-11 bg-[#2553a1] text-white text-sm font-normal rounded-[8px] hover:bg-[#1e4687] transition duration-300">Log
                     In
                 </button>
 
-                <!-- Or Continue With Divider -->
                 <div class="relative my-[20px]">
                     <div class="absolute inset-0 flex items-center">
                         <div class="w-full border-t border-gray-600"></div>
@@ -113,9 +99,7 @@
                     </div>
                 </div>
 
-                <!-- Social Login Buttons -->
                 <div class="space-y-[10px] mb-[60px]">
-                    <!-- Google Button -->
                     <button
                         class="w-full h-11 bg-white text-gray-800 text-sm font-normal rounded-[8px] flex items-center justify-center space-x-2 hover:bg-gray-100 transition duration-300">
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
@@ -127,7 +111,6 @@
                         <span>Continue with Google</span>
                     </button>
 
-                    <!-- Apple Button -->
                     <button
                         class="w-full h-11 bg-black text-white text-sm font-normal rounded-[8px] flex items-center justify-center space-x-2 hover:bg-gray-900 transition duration-300">
                         <svg width="12" height="14" viewBox="0 0 13 16" fill="none"
@@ -139,7 +122,6 @@
                         <span>Continue with Apple</span>
                     </button>
 
-                    <!-- Facebook Button -->
                     <button
                         class="w-full h-11 bg-[#1877f2] text-white text-sm font-normal rounded-[8px] flex items-center justify-center space-x-2 hover:bg-[#1567d2] transition duration-300">
                         <svg width="15" height="14" viewBox="0 0 17 16" fill="none"
@@ -152,7 +134,6 @@
                     </button>
                 </div>
 
-                <!-- Sign Up Prompt -->
                 <div class="absolute bottom-[16px] w-full text-center">
                     <span class="text-gray-400 text-sm font-normal leading-none font-poppins">Don't have an account?</span>
                     <a href="{{ route('signup') }}" class="text-[#2553a1] text-sm font-normal leading-none hover:underline">
@@ -174,7 +155,6 @@
                 }
             </script>
         </div>
-
     </div>
 @endsection
 @section('hideFooter', true)

@@ -5,13 +5,11 @@
         <!-- Back Button SVG -->
         <a href="{{ route('home') }}"
             class="absolute left-4 top-4 flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800 hover:bg-gray-700 text-white transition duration-300 shadow">
-            <!-- Ikon panah kiri -->
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M15.707 17.707C16.098 17.316 16.098 16.684 15.707 16.293L11.414 12L15.707 7.707C16.098 7.316 16.098 6.684 15.707 6.293C15.316 5.902 14.684 5.902 14.293 6.293L9.293 11.293C8.902 11.684 8.902 12.316 9.293 12.707L14.293 17.707C14.684 18.098 15.316 18.098 15.707 17.707Z"
                     fill="currentColor" />
             </svg>
-            <!-- Teks Back -->
             <span class="text-sm font-medium">Back</span>
         </a>
 
@@ -125,6 +123,16 @@
                     </div>
                 </div>
 
+                <!-- Role Selection -->
+                <div class="relative mb-4">
+                    <select id="role" name="role" required
+                        class="w-full h-11 px-4 bg-[#1A1F2E] rounded-xl outline outline-1 outline-[#2E3A59] text-gray-300 text-sm focus:ring-2 focus:ring-[#367AEC] transition duration-150">
+                        <option value="" disabled selected>Pilih Role</option>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
                 <!-- Submit -->
                 <button type="submit"
                     class="w-full h-11 bg-[#367AEC] rounded-xl text-white text-sm font-semibold hover:bg-[#2a5ccd] transition duration-200">
@@ -156,7 +164,7 @@
                             <path fill="#4285F4"
                                 d="M533.5 278.4c0-17.4-1.6-34-4.7-50.1H272v95.1h146.9c-6.3 34-25 62.7-53.4 82l86.1 66.8c50.1-46.1 81.9-114 81.9-193.8z" />
                             <path fill="#34A853"
-                                d="M272 544.3c72.3 0 132.9-23.9 177.2-64.9l-86.1-66.8c-24 16.1-54.7 25.6-91.1 25.6-70 0-129.3-47.2-150.5-110.5H30v69.4C74.8 477 167.5 544.3 272 544.3z" />
+                                d="M272 544.3c72.3 0 132.9-23.9 177.2-64.9 \n                    74.8 477 167.5 544.3 272 544.3z" />
                             <path fill="#FBBC04"
                                 d="M121.5 327.7c-10.5-30.9-10.5-64 0-94.9V163.4H30c-30.7 61.3-30.7 134.3 0 195.6l91.5-31.3z" />
                             <path fill="#EA4335"
@@ -169,7 +177,7 @@
                         class="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition">
                         <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 384 512">
                             <path
-                                d="M318.7 268.6c-.3-49.2 40.1-72.8 41.9-74.1-23.2-33.8-59.3-38.5-72.1-39-30.7-3.1-59.8 18.1-75.3 18.1-15.4 0-39.1-17.7-64.3-17.2-33.1.5-63.6 19.2-80.5 48.8-34.3 59.5-8.8 147.3 24.6 195.6 16.3 23.6 35.7 50 61.1 48.9 24.1-1 33.3-15.8 62.3-15.8 29.1 0 37.1 15.8 62.5 15.4 25.9-.4 42.3-24.1 58.3-47.9 18.3-26.6 25.9-52.3 26.2-53.6-.6-.3-50.2-19.2-50.5-76.2zM254.3 81.6c13.7-16.6 22.9-39.8 20.4-63.1-19.7.8-43.6 13.1-57.6 29.7-12.7 14.7-24 38.2-21 60.5 22 .8 44.5-11.2 58.2-27.1z" />
+                                d="M318.7 268.6c-.3-49.2 40.1-72.8 41.9-74.1-23.2-33.8-59.3-38.5-72.1-39-30.7-3.1-59.8 18.1-75.3 18.1-15.4 0-39.1-17.7-64.3-17.2-33.1.5-63.6 19.2-80.5 48.8-34.3 59.5-8.8 147.3 24.6 195.6 16.3 23.6 35.7 50 61.1 48.9 24.1-1 33.3-15.8 62.3-15.8 29.1 0 37.1 15.8 62.5 15.4 25.9-.4 42.3-24.1 58.3-47.9 18-_R5m 18.3-26.6 25.9-52.3 26.2-53.6-.6-.3-50.2-19.2-50.5-76.2zM254.3 81.6c13.7-16.6 22.9-39.8 20.4-63.1-19.7.8-43.6 13.1-57.6 29.7-12.7 14.7-24 38.2-21 60.5 22 .8 44.5-11.2 58.2-27.1z" />
                         </svg>
                     </button>
 
@@ -184,8 +192,7 @@
                 </div>
             </form>
         </div>
-
-
     </div>
 @endsection
 @section('hideFooter', true)
+</DOCUMENT>
