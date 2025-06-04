@@ -59,3 +59,7 @@ Route::prefix('api')->middleware('api')->group(function () {
     Route::get('/reports', [ReportController::class, 'getReports']);
     Route::get('/reports/statistics', [ReportController::class, 'getReportsStatistics']);
 });
+
+Route::get('/', function () {
+    return redirect('/home');
+});
