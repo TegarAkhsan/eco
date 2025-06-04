@@ -46,20 +46,4 @@
                 placeholder="+62 812 3456 7890">
         </div>
     </div>
-
-    <div class="flex flex-col md:flex-row gap-6 mt-12">
-        <div class="bg-[#1a2e21] rounded-xl border border-red-700 p-6 w-full md:w-1/2">
-            <h3 class="text-red-400 text-xl font-semibold mb-2">Deactivate Account</h3>
-            <p class="text-gray-400 mb-4 text-sm">Your account will be temporarily disabled. You can reactivate anytime by
-                signing back in.</p>
-            <button
-                class="bg-red-500 px-6 py-2 rounded-lg text-white font-semibold hover:bg-red-600 transition">Deactivate</button>
-        </div>
-        <div class="bg-[#1a2e21] rounded-xl border border-red-700 p-6 w-full md:w-1/2">
-            <h3 class="text-red-400 text-xl font-semibold mb-2">Delete Account</h3>
-            <p class="text-gray-400 mb-4 text-sm">This will permanently remove your account and all associated data.</p>
-            <button
-                class="bg-red-500 px-6 py-2 rounded-lg text-white font-semibold hover:bg-red-600 transition">Delete</button>
-        </div>
-    </div>
 @endsection

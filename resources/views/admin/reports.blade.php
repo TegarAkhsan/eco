@@ -1,7 +1,6 @@
-@extends('admin.layouts.app') {{-- Ini memberitahu Blade untuk menggunakan app.blade.php sebagai layout --}}
+@extends('admin.layouts.app')
 
 @section('content')
-    {{-- Konten di dalam section ini akan dimasukkan ke dalam @yield('content') di app.blade.php --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 group">
             <div class="flex items-center space-x-4">
@@ -9,23 +8,13 @@
                     📄
                 </div>
                 <div>
-                    <h3 class="text-gray-700 font-semibold text-sm">Laporan Masuk</h3>
-                    <p class="text-2xl font-bold text-gray-900">120</p>
+                    <h3 class="text-gray-700 font-semibold text-sm">Laporan Masuk / titik sampah</h3>
+                    <p class="text-2xl font-bold text-gray-900">{{ $totalReports ?? 7 }}</p> <!-- Nilai statis: 7 -->
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 group">
-            <div class="flex items-center space-x-4">
-                <div class="bg-blue-100 text-blue-700 p-3 rounded-full text-2xl group-hover:scale-110 transition">
-                    🗑️
-                </div>
-                <div>
-                    <h3 class="text-gray-700 font-semibold text-sm">Titik Sampah</h3>
-                    <p class="text-2xl font-bold text-gray-900">85</p>
-                </div>
-            </div>
-        </div>
+
 
         <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition duration-300 group">
             <div class="flex items-center space-x-4">
@@ -34,7 +23,7 @@
                 </div>
                 <div>
                     <h3 class="text-gray-700 font-semibold text-sm">Bank Sampah Aktif</h3>
-                    <p class="text-2xl font-bold text-gray-900">32</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $activeWasteBanks ?? 32 }}</p> <!-- Nilai statis: 32 -->
                 </div>
             </div>
         </div>
@@ -46,14 +35,13 @@
                 </div>
                 <div>
                     <h3 class="text-gray-700 font-semibold text-sm">TPA Terdaftar</h3>
-                    <p class="text-2xl font-bold text-gray-900">14</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $registeredTPAs ?? 14 }}</p> <!-- Nilai statis: 14 -->
                 </div>
             </div>
         </div>
     </div>
 
     <section class="mt-6 px-0 max-w-full font-poppins">
-
         <div class="bg-white rounded-xl shadow px-6 py-8">
             <h2 class="text-2xl font-semibold mb-6 text-gray-800">Daftar Laporan</h2>
 
@@ -86,45 +74,71 @@
                         </tr>
                     </thead>
                     <tbody id="reportsTableBody" class="divide-y divide-gray-200">
-                        <tr>
-                            <td class="px-6 py-4">#LPR00123</td>
-                            <td class="px-6 py-4">Surabaya, Jawa Timur</td>
-                            <td class="px-6 py-4">27 Mei 2025</td>
-                            <td class="px-6 py-4">
-                                <span
-                                    class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <button class="text-green-600 hover:underline text-sm">Lihat</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4">#LPR00124</td>
-                            <td class="px-6 py-4">Malang, Jawa Timur</td>
-                            <td class="px-6 py-4">26 Mei 2025</td>
-                            <td class="px-6 py-4">
-                                <span
-                                    class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Verifikasi</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <button class="text-green-600 hover:underline text-sm">Lihat</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4">#LPR00125</td>
-                            <td class="px-6 py-4">Jakarta Selatan</td>
-                            <td class="px-6 py-4">25 Mei 2025</td>
-                            <td class="px-6 py-4">
-                                <span
-                                    class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Ditinjau</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <button class="text-green-600 hover:underline text-sm">Lihat</button>
-                            </td>
-                        </tr>
+                        @if (isset($reports) && $reports->isNotEmpty())
+                            @foreach ($reports as $report)
+                                <tr>
+                                    <td class="px-6 py-4">#LPR{{ str_pad($report->id, 5, '0', STR_PAD_LEFT) }}</td>
+                                    <td class="px-6 py-4">{{ $report->location ?? '' }}</td>
+                                    <td class="px-6 py-4">
+                                        {{ $report->created_at ? $report->created_at->format('d M Y') : '' }}</td>
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="px-2 py-1 text-xs font-medium rounded-full
+                                            {{ $report->status == 'Menunggu'
+                                                ? 'bg-yellow-100 text-yellow-800'
+                                                : ($report->status == 'Verifikasi'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-green-100 text-green-800') }}">
+                                            {{ $report->status ?? 'Menunggu' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <button class="text-green-600 hover:underline text-sm">Lihat</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td class="px-6 py-4">#LPR00123</td>
+                                <td class="px-6 py-4">Surabaya, Jawa Timur</td>
+                                <td class="px-6 py-4">27 Mei 2025</td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <button class="text-green-600 hover:underline text-sm">Lihat</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4">#LPR00124</td>
+                                <td class="px-6 py-4">Malang, Jawa Timur</td>
+                                <td class="px-6 py-4">26 Mei 2025</td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Verifikasi</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <button class="text-green-600 hover:underline text-sm">Lihat</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4">#LPR00125</td>
+                                <td class="px-6 py-4">Jakarta Selatan</td>
+                                <td class="px-6 py-4">25 Mei 2025</td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Ditinjau</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <button class="text-green-600 hover:underline text-sm">Lihat</button>
+                                </td>
+                            </tr>
+                        @endif
                     </tbody>
                 </table>
             </div>
+        </div>
     </section>
 
     <script>
@@ -139,17 +153,17 @@
                 const selectedStatus = statusFilter.value.toLowerCase();
 
                 tableRows.forEach(row => {
-                    const idText = row.children[0].textContent.toLowerCase(); // ID Laporan
-                    const locationText = row.children[1].textContent.toLowerCase(); // Lokasi
-                    const statusText = row.children[3].textContent.toLowerCase(); // Status
+                    const idText = row.children[0].textContent.toLowerCase();
+                    const locationText = row.children[1].textContent.toLowerCase();
+                    const statusText = row.children[3].textContent.toLowerCase();
 
                     const matchesSearch = idText.includes(searchTerm) || locationText.includes(searchTerm);
                     const matchesStatus = selectedStatus === "" || statusText.includes(selectedStatus);
 
                     if (matchesSearch && matchesStatus) {
-                        row.style.display = ''; // Show the row
+                        row.style.display = '';
                     } else {
-                        row.style.display = 'none'; // Hide the row
+                        row.style.display = 'none';
                     }
                 });
             }
@@ -157,7 +171,6 @@
             searchInput.addEventListener('keyup', filterReports);
             statusFilter.addEventListener('change', filterReports);
 
-            // Initial filter when the page loads
             filterReports();
         });
     </script>

@@ -22,7 +22,7 @@
             Data Laporan
         </a>
 
-        <a href="{{ route('admin.dashboard') }}"
+        <a href="{{ route('admin.ecotrack') }}"
             class="flex items-center gap-3 text-white rounded-lg px-4 py-2 hover:text-green-300 transition nav-link">
             <svg class="w-4 h-4" viewBox="0 0 18 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18 16H0V0H18V16Z" stroke="#E5E7EB" />
@@ -49,9 +49,7 @@
             Setting Akun
         </a>
 
-        <button class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-medium">
-            Download Data
-        </button>
+
     </nav>
 </aside>
 
@@ -76,10 +74,7 @@
 
         navLinks.forEach(link => {
             link.addEventListener('click', function(e) {
-                // Hapus kelas active dari semua link
                 navLinks.forEach(nav => nav.classList.remove('active'));
-
-                // Tambahkan kelas active ke link yang diklik
                 this.classList.add('active');
             });
         });

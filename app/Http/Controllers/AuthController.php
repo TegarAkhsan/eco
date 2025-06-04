@@ -3,24 +3,41 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Activity;
 use Illuminate\Http\Request;
-use App\Events\UserLoggedIn; // Add this import
+use App\Events\UserLoggedIn;
 use App\Events\UserLoggedOut;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    /**
+     * Menampilkan halaman login.
+     *
+     * @return \Illuminate\View\View
+     */
     public function showLogin()
     {
         return view('auth.login');
     }
 
+    /**
+     * Menampilkan halaman signup.
+     *
+     * @return \Illuminate\View\View
+     */
     public function showSignup()
     {
         return view('auth.signup');
     }
 
+    /**
+     * Menangani pendaftaran pengguna baru.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function signup(Request $request)
     {
         $request->validate([
@@ -32,11 +49,12 @@ class AuthController extends Controller
             'role' => 'required|in:user,admin',
         ]);
 
+        // Memeriksa batasan jumlah admin
         if ($request->role === 'admin') {
             $adminCount = User::whereIn('role', ['admin', 'super_admin'])->count();
             if ($adminCount >= 3) {
                 return back()->withErrors([
-                    'role' => 'The maximum number of admin accounts (3) has been reached.',
+                    'role' => 'Maaf, jumlah akun admin maksimum (3) telah tercapai. Silakan hubungi administrator.',
                 ])->withInput();
             }
         }
@@ -48,17 +66,24 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'last_login_at' => null, // Inisialisasi last_login_at
         ]);
 
         Auth::login($user);
 
         if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard')->with('success', 'Registration successful! Welcome to Eco Track Admin.');
+            return redirect()->route('admin.dashboard')->with('success', 'Pendaftaran berhasil! Selamat datang di Eco Track Admin.');
         }
 
-        return redirect()->route('home')->with('success', 'Registration successful! Welcome to Eco Track.');
+        return redirect()->route('home')->with('success', 'Pendaftaran berhasil! Selamat datang di Eco Track.');
     }
 
+    /**
+     * Menangani proses login pengguna.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -70,43 +95,52 @@ class AuthController extends Controller
             $request->session()->regenerate();
             $user = Auth::user();
 
-            // Update last_login_at on login
+            // Update last_login_at saat login
             $user->update(['last_login_at' => now()]);
 
-            if ($user->role === 'admin' || $user->role === 'super_admin') {
-                // Broadcast the UserLoggedIn event
+            // Broadcast event login untuk admin/super_admin
+            if (in_array($user->role, ['admin', 'super_admin'])) {
                 event(new UserLoggedIn($user));
-                return redirect()->route('admin.dashboard')->with('success', 'Login successful! Welcome back to Admin Dashboard.');
+                return redirect()->route('admin.dashboard')->with('success', 'Login berhasil! Selamat datang kembali di Admin Dashboard.');
             }
 
-            return redirect()->route('home')->with('success', 'Login successful! Welcome back.');
+            return redirect()->route('home')->with('success', 'Login berhasil! Selamat datang kembali.');
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => 'Email atau kata sandi yang Anda masukkan tidak sesuai.',
         ])->onlyInput('email');
     }
 
+    /**
+     * Menangani proses logout pengguna.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function logout(Request $request)
     {
         $user = Auth::user();
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
 
-        if ($user && in_array($user->role, ['admin', 'super_admin'])) {
-            // Record the logout activity
-            \App\Models\Activity::create([
-                'user_id' => $user->id,
-                'description' => 'telah keluar dari sistem',
-                'status' => 'logout',
-                'created_at' => now(),
-            ]);
+        if ($user) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-            // Broadcast the UserLoggedOut event
-            event(new UserLoggedOut($user));
+            // Mencatat aktivitas logout untuk admin/super_admin
+            if (in_array($user->role, ['admin', 'super_admin'])) {
+                Activity::create([
+                    'user_id' => $user->id,
+                    'description' => 'telah keluar dari sistem',
+                    'status' => 'logout',
+                    'created_at' => now(),
+                ]);
+
+                // Broadcast event logout
+                event(new UserLoggedOut($user));
+            }
         }
 
-        return redirect()->route('login')->with('success', 'You have been logged out.');
+        return redirect()->route('login')->with('success', 'Anda telah logout.');
     }
 }
