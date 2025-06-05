@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-    @apply bg-gradient-to-b from-[#0b1121] to-[#0f172a] text-white min-h-screen;
-}
-
 :root {
     --foreground-rgb: 255, 255, 255;
     --background-start-rgb: 11, 17, 33;
@@ -13,6 +9,7 @@ body {
 }
 
 body {
+    @apply bg-gradient-to-b from-[#0b1121] to-[#0f172a] text-white min-h-screen;
     color: rgb(var(--foreground-rgb));
     background: linear-gradient(to bottom, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb))) no-repeat;
     min-height: 100vh;
