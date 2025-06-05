@@ -5,6 +5,7 @@ module.exports = {
         "./resources/**/*.blade.php",
         "./resources/**/*.js",
         "./resources/**/*.vue",
+        "./resources/**/*.jsx",
         "*.{js,ts,jsx,tsx,mdx}",
         "app/**/*.{ts,tsx}",
         "components/**/*.{ts,tsx}",
