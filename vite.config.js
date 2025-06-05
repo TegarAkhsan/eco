@@ -6,13 +6,13 @@ export default defineConfig({
   plugins: [
     laravel({
       input: ['resources/css/app.css', 'resources/js/app.js'],
-      build: {
-        manifest: true,
-        outDir: 'public/build',
-        emptyOutDir: true,
-      },
+      refresh: true,
     }),
     react(),
   ],
+  build: {
+    outDir: 'public/build',
+    emptyOutDir: true,
+    manifest: true,
+  },
 });
-
